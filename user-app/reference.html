@@ -1,0 +1,419 @@
+import React, { useState, useEffect } from 'react';
+import { Clock, MapPin, Wifi, Bell, Calendar, TrendingUp, CheckCircle, AlertCircle, Users } from 'lucide-react';
+
+const AttendanceApp = () => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [checkInTime, setCheckInTime] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [activeTab, setActiveTab] = useState('home');
+  const [autoCheckInEnabled, setAutoCheckInEnabled] = useState({
+    gps: true,
+    wifi: true,
+    time: true
+  });
+
+  // Mock data
+  const officeStartTime = '09:00 AM';
+  const weekStats = {
+    totalHours: 42.5,
+    daysPresent: 5,
+    avgCheckIn: '08:55 AM',
+    onTimeRate: 100
+  };
+
+  const recentActivity = [
+    { date: 'Today', checkIn: '08:45 AM', checkOut: '-', hours: elapsedTime, status: 'active' },
+    { date: 'Yesterday', checkIn: '08:50 AM', checkOut: '06:15 PM', hours: 9.4, status: 'completed' },
+    { date: 'Sep 27', checkIn: '08:55 AM', checkOut: '06:00 PM', hours: 9.1, status: 'completed' },
+    { date: 'Sep 26', checkIn: '09:05 AM', checkOut: '06:20 PM', hours: 9.25, status: 'late' },
+  ];
+
+  const notifications = [
+    { id: 1, text: 'Sarah Johnson checked in at 08:30 AM', time: '2 min ago', type: 'info' },
+    { id: 2, text: 'You\'re on time today! 🎉', time: '5 min ago', type: 'success' },
+    { id: 3, text: '15 team members are in the office', time: '10 min ago', type: 'info' },
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+      if (isCheckedIn) {
+        const elapsed = (new Date() - checkInTime) / 1000 / 3600;
+        setElapsedTime(elapsed);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isCheckedIn, checkInTime]);
+
+  const handleCheckIn = () => {
+    setIsCheckedIn(true);
+    setCheckInTime(new Date());
+  };
+
+  const handleCheckOut = () => {
+    setIsCheckedIn(false);
+    setElapsedTime(0);
+  };
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+
+  const formatElapsedTime = (hours) => {
+    const h = Math.floor(hours);
+    const m = Math.floor((hours - h) * 60);
+    const s = Math.floor(((hours - h) * 60 - m) * 60);
+    return `${h}h ${m}m ${s}s`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Clock className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">Attendance</h1>
+                <p className="text-sm text-gray-500">{currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+              </div>
+            </div>
+            <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <Bell className="w-6 h-6 text-gray-600" />
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Main Check-in Card */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-6">
+          <div className="text-center">
+            <p className="text-gray-500 mb-6">Office hours: 9:00 AM - 6:00 PM</p>
+
+            {/* Circular Timer - Also acts as button */}
+            <button 
+              onClick={isCheckedIn ? handleCheckOut : handleCheckIn}
+              className="relative inline-flex items-center justify-center mb-6 focus:outline-none group"
+            >
+              <svg className="w-64 h-64 transform -rotate-90">
+                {/* Background circle */}
+                <circle
+                  cx="128"
+                  cy="128"
+                  r="112"
+                  stroke="#e5e7eb"
+                  strokeWidth="16"
+                  fill="none"
+                />
+                {/* Progress circle - only fills when checked in */}
+                {isCheckedIn && (
+                  <circle
+                    cx="128"
+                    cy="128"
+                    r="112"
+                    stroke="#10b981"
+                    strokeWidth="16"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 112}`}
+                    strokeDashoffset={`${2 * Math.PI * 112 * (1 - (elapsedTime % 9) / 9)}`}
+                    className="transition-all duration-1000"
+                  />
+                )}
+                {/* Outline color indicator */}
+                <circle
+                  cx="128"
+                  cy="128"
+                  r="120"
+                  stroke={isCheckedIn ? "#10b981" : "#ef4444"}
+                  strokeWidth="2"
+                  fill="none"
+                  className="transition-colors duration-300 group-hover:stroke-opacity-80"
+                />
+              </svg>
+              
+              {/* Timer text in center */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <div className="text-5xl font-light text-gray-900">
+                  {isCheckedIn 
+                    ? formatElapsedTime(elapsedTime)
+                    : 'Check In'
+                  }
+                </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  {isCheckedIn ? 'Tap to check out' : 'Tap to start'}
+                </p>
+              </div>
+            </button>
+
+            {/* Check-in status centered below circle */}
+            <div className="min-h-[40px] flex items-center justify-center">
+              {isCheckedIn && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full">
+                  <CheckCircle className="w-5 h-5" />
+                  <span className="font-medium">Checked In at {formatTime(checkInTime)}</span>
+                </div>
+              )}
+            </div>
+
+            {!isCheckedIn && (
+              <div className="space-y-4 mt-4">
+                <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-blue-500" />
+                    <span>Auto GPS</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Wifi className="w-4 h-4 text-green-500" />
+                    <span>Auto WiFi</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-purple-500" />
+                    <span>Time Ping</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex gap-2 mb-6 bg-white rounded-xl p-1 shadow-sm">
+          <button
+            onClick={() => setActiveTab('home')}
+            className={`flex-1 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'home'
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Home
+          </button>
+          <button
+            onClick={() => setActiveTab('stats')}
+            className={`flex-1 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'stats'
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            My Stats
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex-1 py-3 rounded-lg font-medium transition-all ${
+              activeTab === 'settings'
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Settings
+          </button>
+        </div>
+
+        {/* Content based on active tab */}
+        {activeTab === 'home' && (
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Recent Activity */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-500" />
+                Recent Activity
+              </h3>
+              <div className="space-y-3">
+                {recentActivity.map((activity, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                    <div>
+                      <p className="font-medium text-gray-900">{activity.date}</p>
+                      <p className="text-sm text-gray-500">
+                        {activity.checkIn} - {activity.checkOut}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-blue-600">
+                        {activity.status === 'active' ? formatElapsedTime(activity.hours) : `${activity.hours}h`}
+                      </p>
+                      {activity.status === 'late' && (
+                        <span className="text-xs text-orange-500">Late</span>
+                      )}
+                      {activity.status === 'active' && (
+                        <span className="text-xs text-green-500">Active</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Notifications */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Bell className="w-5 h-5 text-blue-500" />
+                Notifications
+              </h3>
+              <div className="space-y-3">
+                {notifications.map((notif) => (
+                  <div key={notif.id} className="flex gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      notif.type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+                    }`}></div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900">{notif.text}</p>
+                      <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'stats' && (
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span className="text-sm text-gray-500">Total Hours</span>
+                </div>
+                <p className="text-3xl font-semibold text-gray-900">{weekStats.totalHours}h</p>
+                <p className="text-xs text-gray-500 mt-1">This week</p>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  </div>
+                  <span className="text-sm text-gray-500">Days Present</span>
+                </div>
+                <p className="text-3xl font-semibold text-gray-900">{weekStats.daysPresent}</p>
+                <p className="text-xs text-gray-500 mt-1">This week</p>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <span className="text-sm text-gray-500">Avg Check-in</span>
+                </div>
+                <p className="text-2xl font-semibold text-gray-900">{weekStats.avgCheckIn}</p>
+                <p className="text-xs text-gray-500 mt-1">This week</p>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Users className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <span className="text-sm text-gray-500">On-Time Rate</span>
+                </div>
+                <p className="text-3xl font-semibold text-gray-900">{weekStats.onTimeRate}%</p>
+                <p className="text-xs text-gray-500 mt-1">This week</p>
+              </div>
+            </div>
+
+            {/* Monthly Overview */}
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Overview</h3>
+              <div className="h-64 flex items-end justify-between gap-2">
+                {[8.5, 9.2, 8.8, 9.0, 8.7, 9.1, 8.9, 9.3, 8.6, 9.0, 8.8, 9.2, 8.9, 9.1].map((hours, idx) => (
+                  <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                    <div className="w-full bg-gradient-to-t from-blue-500 to-indigo-600 rounded-t-lg hover:opacity-80 transition-opacity" 
+                         style={{ height: `${(hours / 10) * 100}%` }}></div>
+                    <span className="text-xs text-gray-400">{idx + 1}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Auto Check-in Settings</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-blue-500" />
+                  <div>
+                    <p className="font-medium text-gray-900">GPS Location</p>
+                    <p className="text-sm text-gray-500">Auto check-in when you reach office</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setAutoCheckInEnabled({...autoCheckInEnabled, gps: !autoCheckInEnabled.gps})}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    autoCheckInEnabled.gps ? 'bg-blue-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                    autoCheckInEnabled.gps ? 'translate-x-6' : 'translate-x-0.5'
+                  }`}></div>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Wifi className="w-5 h-5 text-green-500" />
+                  <div>
+                    <p className="font-medium text-gray-900">Office WiFi</p>
+                    <p className="text-sm text-gray-500">Auto check-in when connected to office WiFi</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setAutoCheckInEnabled({...autoCheckInEnabled, wifi: !autoCheckInEnabled.wifi})}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    autoCheckInEnabled.wifi ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                    autoCheckInEnabled.wifi ? 'translate-x-6' : 'translate-x-0.5'
+                  }`}></div>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-purple-500" />
+                  <div>
+                    <p className="font-medium text-gray-900">Time Reminder</p>
+                    <p className="text-sm text-gray-500">Get notified at office start time</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setAutoCheckInEnabled({...autoCheckInEnabled, time: !autoCheckInEnabled.time})}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    autoCheckInEnabled.time ? 'bg-purple-500' : 'bg-gray-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
+                    autoCheckInEnabled.time ? 'translate-x-6' : 'translate-x-0.5'
+                  }`}></div>
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-8 p-4 bg-blue-50 rounded-xl">
+              <p className="text-sm text-blue-800">
+                <strong>Tip:</strong> Enable multiple auto check-in methods for seamless attendance tracking. The app will automatically log you in when any condition is met.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AttendanceApp;
