@@ -18,7 +18,7 @@
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
     "framer-motion": "^11.0.5",
-    "lucide-react": "^0.344.0",
+    "lucide-react": "^0.560.0",
     "moment": "^2.30.1",
     "next": "^16.0.8",
     "next-auth": "^4.24.6",
