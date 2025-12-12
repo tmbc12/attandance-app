@@ -1,6 +1,6 @@
 // API Configuration
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-export const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || 'TMBC';
+export const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || 'Teambo';
 export const COMPANY_WEBSITE = process.env.NEXT_PUBLIC_COMPANY_WEBSITE || 'https://yourcompany.com';
 
 // Session Configuration

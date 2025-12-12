@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Email templates
-const getInviteEmailTemplate = (name, token, companyName = 'TMBC') => {
+const getInviteEmailTemplate = (name, token, companyName = 'Teambo') => {
   // Create both web fallback and deep link
   const webUrl = `${process.env.ADMIN_URL}/invite?token=${token}`;
   const deepLink = `tmbc://register?token=${token}`;
@@ -106,7 +106,7 @@ const getInviteEmailTemplate = (name, token, companyName = 'TMBC') => {
 };
 
 // Email template for OTP
-const getOTPEmailTemplate = (name, otp, companyName = 'TMBC') => {
+const getOTPEmailTemplate = (name, otp, companyName = 'Teambo') => {
   return {
     subject: `Your Verification Code - ${companyName}`,
     html: `
@@ -201,7 +201,7 @@ const sendInviteEmail = async (email, token, name) => {
 
     const mailOptions = {
       from: {
-        name: process.env.COMPANY_NAME || 'TMBC',
+        name: process.env.COMPANY_NAME || 'Teambo',
         address: process.env.NODEMAILER_EMAIL_USER,
       },
       to: email,
@@ -226,7 +226,7 @@ const sendOTPEmail = async (email, otp, name) => {
 
     const mailOptions = {
       from: {
-        name: process.env.COMPANY_NAME || 'TMBC',
+        name: process.env.COMPANY_NAME || 'Teambo',
         address: process.env.NODEMAILER_EMAIL_USER,
       },
       to: email,
@@ -249,7 +249,7 @@ const sendTestEmail = async (email) => {
   try {
     const mailOptions = {
       from: {
-        name: process.env.COMPANY_NAME || 'TMBC',
+        name: process.env.COMPANY_NAME || 'Teambo',
         address: process.env.NODEMAILER_EMAIL_USER,
       },
       to: email,

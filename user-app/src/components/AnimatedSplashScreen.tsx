@@ -159,22 +159,6 @@ export default function AnimatedSplashScreen({ onAnimationEnd }: AnimatedSplashS
           />
           <Animated.Text
             style={[
-              styles.appName,
-              {
-                opacity: opacityAnim,
-                transform: [{
-                  translateY: opacityAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [20, 0],
-                  }),
-                }],
-              }
-            ]}
-          >
-            Attendance
-          </Animated.Text>
-          <Animated.Text
-            style={[
               styles.tagline,
               {
                 opacity: opacityAnim,
@@ -270,16 +254,6 @@ const styles = StyleSheet.create({
   appLogo: {
     width: 200,
     height: 80,
-  },
-  appName: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    fontFamily: 'Sora_600SemiBold',
   },
   tagline: {
     fontSize: 16,

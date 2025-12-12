@@ -59,8 +59,6 @@ export default function LoginScreen() {
               style={styles.logo}
               resizeMode="contain"
             />
-            {/* <Text style={styles.title}>Teambo</Text> */}
-            <Text style={styles.subtitle}>Attendance App</Text>
           </View>
         </LinearGradient>
       </SafeAreaView>
@@ -222,12 +220,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 50,
-  },
-  title: {
-    fontSize: 42,
-    fontFamily: 'Sora_700Bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,

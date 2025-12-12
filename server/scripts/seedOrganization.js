@@ -14,7 +14,7 @@ async function seedOrganization() {
 
     if (!organization) {
       organization = new Organization({
-        name: 'TMBC',
+        name: 'Teambo',
         email: 'admin@tmbc.com',
         phone: '+1234567890',
         address: {

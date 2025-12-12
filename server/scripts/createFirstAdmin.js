@@ -14,7 +14,7 @@ const createFirstOrganization = async () => {
       const password = process.env.FIRST_ADMIN_PASSWORD || 'Admin@123456';
 
       const organization = await Organization.create({
-        name: 'TMBC',
+        name: 'Teambo',
         email: email,
         password: password, // Will be hashed by pre-save hook
         phone: '+1234567890',
