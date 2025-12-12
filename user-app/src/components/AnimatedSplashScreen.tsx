@@ -141,6 +141,22 @@ export default function AnimatedSplashScreen({ onAnimationEnd }: AnimatedSplashS
 
         {/* App name */}
         <Animated.View style={[styles.textContainer, { opacity: fadeOutAnim }]}>
+          <Animated.Image
+            source={require('../../assets/teambo-logo.png')}
+            style={[
+              styles.appLogo,
+              {
+                opacity: opacityAnim,
+                transform: [{
+                  translateY: opacityAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }),
+                }],
+              }
+            ]}
+            resizeMode="contain"
+          />
           <Animated.Text
             style={[
               styles.appName,
@@ -155,7 +171,7 @@ export default function AnimatedSplashScreen({ onAnimationEnd }: AnimatedSplashS
               }
             ]}
           >
-            TMBC Attendance
+            Attendance
           </Animated.Text>
           <Animated.Text
             style={[
@@ -250,6 +266,10 @@ const styles = StyleSheet.create({
   textContainer: {
     alignItems: 'center',
     marginTop: 20,
+  },
+  appLogo: {
+    width: 200,
+    height: 80,
   },
   appName: {
     fontSize: 32,

@@ -178,10 +178,17 @@ export default function ManualRegisterScreen() {
           end={{ x: 1, y: 0 }}
           style={styles.header}
         >
-          <View style={styles.headerContent}>
-            <Text style={styles.title}>Join TMBC</Text>
-            <Text style={styles.subtitle}>Enter your invitation code to get started</Text>
-          </View>
+            <View style={styles.headerContent}>
+              <View style={styles.logoTitleContainer}>
+                <Text style={styles.title}>Join</Text>
+                <Image
+                  source={require('../../../assets/teambo-logo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text style={styles.subtitle}>Enter your invitation code to get started</Text>
+            </View>
         </LinearGradient>
       </SafeAreaView>
 
@@ -574,11 +581,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  logoTitleContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontFamily: 'Sora_700Bold',
     color: '#FFFFFF',
-    marginBottom: 8,
+    marginLeft: 12,
   },
   subtitle: {
     fontSize: 14,
@@ -593,6 +604,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     padding: 24,
+  },
+  logo: {
+    width: 80,
+    height: 40,
   },
   form: {
     marginBottom: 24,

@@ -51,7 +51,7 @@ const getInviteEmailTemplate = (name, token, companyName = 'TMBC') => {
           </div>
           
           <div class="warning">
-            <strong>For Mobile App Users:</strong> If you have the TMBC mobile app installed, copy and paste this link into your browser:
+            <strong>For Mobile App Users:</strong> If you have the Teambo mobile app installed, copy and paste this link into your browser:
             <div class="code" style="word-break: break-all; font-size: 14px; padding: 8px; background: #f3f4f6; border-radius: 4px; margin: 10px 0;">${deepLink}</div>
           </div>
           
@@ -86,7 +86,7 @@ const getInviteEmailTemplate = (name, token, companyName = 'TMBC') => {
       OPTION 1 - Web Browser:
       ${webUrl}
       
-      OPTION 2 - Mobile App (if you have the TMBC app installed):
+      OPTION 2 - Mobile App (if you have the Teambo app installed):
       ${deepLink}
       
       OPTION 3 - Manual Code Entry:
@@ -253,7 +253,7 @@ const sendTestEmail = async (email) => {
         address: process.env.NODEMAILER_EMAIL_USER,
       },
       to: email,
-      subject: 'Test Email from TMBC Admin',
+      subject: 'Test Email from Teambo Admin',
       text: 'This is a test email to verify email configuration.',
       html: '<p>This is a test email to verify email configuration.</p>'
     };

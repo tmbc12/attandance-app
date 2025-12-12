@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TMBC Admin Dashboard",
+  title: "Teambo Admin Dashboard",
   description: "Employee management and attendance monitoring system",
   icons: {
     icon: '/favicon.ico',

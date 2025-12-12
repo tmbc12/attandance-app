@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
   ScrollView,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -53,7 +54,12 @@ export default function LoginScreen() {
           style={styles.header}
         >
           <View style={styles.headerContent}>
-            <Text style={styles.title}>TMBC</Text>
+            <Image
+              source={require('../../../assets/teambo-logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            {/* <Text style={styles.title}>Teambo</Text> */}
             <Text style={styles.subtitle}>Attendance App</Text>
           </View>
         </LinearGradient>
@@ -212,6 +218,10 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  logo: {
+    width: 120,
+    height: 50,
   },
   title: {
     fontSize: 42,
