@@ -9,6 +9,9 @@ import AddDepartmentModal from './AddDepartmentModal';
 import EditDepartmentModal from './EditDepartmentModal';
 import DeleteDepartmentConfirmModal from './DeleteDepartmentConfirmModal';
 import BulkInviteModal from './BulkInviteModal';
+import AddHolidayModal from './AddHolidayModal';
+import EditHolidayModal from './EditHolidayModal';
+import DeleteHolidayConfirmModal from './DeleteHolidayConfirmModal';
 
 export default function ModalProvider() {
   const modals = useAppSelector((state) => state.ui.modals);
@@ -23,6 +26,9 @@ export default function ModalProvider() {
       {modals.deleteConfirm && <DeleteConfirmModal />}
       {modals.deleteDepartmentConfirm && <DeleteDepartmentConfirmModal />}
       {modals.bulkInvite && <BulkInviteModal />}
+      {modals.addHoliday && <AddHolidayModal />}
+      {modals.editHoliday && <EditHolidayModal />}
+      {modals.deleteHolidayConfirm && <DeleteHolidayConfirmModal />}
     </>
   );
 }

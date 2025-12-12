@@ -17,6 +17,20 @@ interface Department {
   updatedAt: string;
 }
 
+interface Holiday {
+  _id: string;
+  date: string;
+  description?: string;
+  organizationId: string;
+  createdBy?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface UiState {
   sidebarOpen: boolean;
   theme: string;
@@ -30,9 +44,13 @@ interface UiState {
     employeeDetails: boolean;
     deleteConfirm: boolean;
     deleteDepartmentConfirm: boolean;
+    addHoliday: boolean;
+    editHoliday: boolean;
+    deleteHolidayConfirm: boolean;
   };
   selectedEmployee: Employee | null;
   selectedDepartment: Department | null;
+  selectedHoliday: Holiday | null;
   loading: {
     global: boolean;
     employees: boolean;
@@ -52,10 +70,14 @@ const initialState: UiState = {
     bulkInvite: false,
     employeeDetails: false,
     deleteConfirm: false,
-    deleteDepartmentConfirm: false
+    deleteDepartmentConfirm: false,
+    addHoliday: false,
+    editHoliday: false,
+    deleteHolidayConfirm: false
   },
   selectedEmployee: null,
   selectedDepartment: null,
+  selectedHoliday: null,
   loading: {
     global: false,
     employees: false,
@@ -97,12 +119,14 @@ const uiSlice = createSlice({
     clearNotifications: (state) => {
       state.notifications = [];
     },
-    openModal: (state, action: { payload: { modal: keyof UiState['modals']; data?: Employee | Department } }) => {
+    openModal: (state, action: { payload: { modal: keyof UiState['modals']; data?: Employee | Department | Holiday } }) => {
       const { modal, data } = action.payload;
       state.modals[modal] = true;
       if (data) {
         if (modal === 'editDepartment' || modal === 'addDepartment' || modal === 'deleteDepartmentConfirm') {
           state.selectedDepartment = data as Department;
+        } else if (modal === 'editHoliday' || modal === 'deleteHolidayConfirm') {
+          state.selectedHoliday = data as Holiday;
         } else {
           state.selectedEmployee = data as Employee;
         }
@@ -117,6 +141,9 @@ const uiSlice = createSlice({
       if (modal === 'editDepartment' || modal === 'deleteDepartmentConfirm' || modal === 'addDepartment') {
         state.selectedDepartment = null;
       }
+      if (modal === 'editHoliday' || modal === 'deleteHolidayConfirm' || modal === 'addHoliday') {
+        state.selectedHoliday = null;
+      }
     },
     closeAllModals: (state) => {
       Object.keys(state.modals).forEach(modal => {
@@ -124,6 +151,7 @@ const uiSlice = createSlice({
       });
       state.selectedEmployee = null;
       state.selectedDepartment = null;
+      state.selectedHoliday = null;
     },
     setSelectedEmployee: (state, action) => {
       state.selectedEmployee = action.payload;

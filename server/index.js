@@ -10,6 +10,8 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(helmet());
 app.use(cors({
@@ -18,6 +20,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
 
 // Rate limiting for general API routes
 const limiter = rateLimit({
@@ -66,6 +69,7 @@ app.use('/api/corrections', limiter, require('./routes/corrections'));
 app.use('/api/notifications', limiter, require('./routes/notifications'));
 app.use('/api/admin/monitoring', limiter, require('./routes/admin/monitoring'));
 app.use('/api/tasks', limiter, require('./routes/tasks'));
+app.use('/api/holidays', limiter, require('./routes/holidays'));
 
 // Expo Token Route
 app.use("/api/expo-token",require("./routes/token.js"));

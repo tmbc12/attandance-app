@@ -4,6 +4,7 @@ const moment = require('moment-timezone'); // npm i moment-timezone
 const Employee = require('../models/Employee');
 const Attendance = require('../models/Attendance');
 const Organization = require('../models/Organization');
+const Holiday = require('../models/holidayModel');
 const { default: sendPushNotification } = require('./sendNotification');
 const { default: ExpoToken } = require('../models/ExpoToken');
 const timers = new Map(); // orgId -> timeoutId
@@ -12,6 +13,33 @@ const timers = new Map(); // orgId -> timeoutId
 function parseTimeHM(hm) {
   const [hourStr, minuteStr] = hm.split(':');
   return { hour: Number(hourStr), minute: Number(minuteStr) };
+}
+
+// Check if a date is a holiday for an organization
+async function isHoliday(organizationId, date) {
+  try {
+    // Create start and end of the day for the given date
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    // Check if there's a holiday for this organization on this date
+    const holiday = await Holiday.findOne({
+      organizationId: organizationId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      }
+    });
+    
+    return !!holiday;
+  } catch (error) {
+    console.error(`Error checking holiday for org ${organizationId} on ${date}:`, error);
+    // On error, return false to allow scheduling (fail-safe)
+    return false;
+  }
 }
 
 // Compute Date object in system timezone for the org's start time on the given date
@@ -145,6 +173,14 @@ async function rescheduleOrg(orgOrId) {
     return;
   }
 
+  // Check if today is a holiday
+  const todayDate = orgNow.toDate();
+  const isTodayHoliday = await isHoliday(org.id, todayDate);
+  if (isTodayHoliday) {
+    console.log(`Org ${org.id} has a holiday today; no schedule created.`);
+    return;
+  }
+
   // Compute start date/time for today
   const startDate = computeOrgStartDate(org, orgNow);
   const now = new Date();
@@ -176,6 +212,14 @@ async function scheduleTodaysChecks() {
 
       // if today is a working day (org.settings.workingDays contains weekday)
       if (Array.isArray(org.settings.workingDays) && org.settings.workingDays.includes(weekday)) {
+        // Check if today is a holiday
+        const todayDate = orgNow.toDate();
+        const isTodayHoliday = await isHoliday(org.id, todayDate);
+        if (isTodayHoliday) {
+          console.log(`Org ${org.id}(${org.name}) has a holiday today; skipping scheduling.`);
+          continue;
+        }
+
         // Compute start datetime for today in org tz
         const startDate = computeOrgStartDate(org, orgNow);
 

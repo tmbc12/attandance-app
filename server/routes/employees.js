@@ -4,6 +4,7 @@ const Employee = require('../models/Employee');
 const Invite = require('../models/Invite');
 const { auth, requirePermission } = require('../middleware/auth');
 const { sendInviteEmail } = require('../utils/email');
+const Department = require('../models/Department');
 
 const router = express.Router();
 
@@ -468,6 +469,8 @@ router.post('/register', async (req, res) => {
         email: employee.email,
         employeeId: employee.employeeId,
         department: employee.department,
+        departmentId: employee.department._id,
+        departmentName: employee.department.name,
         designation: employee.designation,
         role: employee.role,
         status: employee.status
@@ -638,6 +641,8 @@ router.post('/register-with-code', async (req, res) => {
         email: updatedEmployee.email,
         employeeId: updatedEmployee.employeeId,
         department: updatedEmployee.department,
+        departmentId: employee.department._id,
+        departmentName: employee.department.name,
         designation: updatedEmployee.designation,
         role: updatedEmployee.role,
         status: updatedEmployee.status

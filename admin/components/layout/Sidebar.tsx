@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '../../lib/hooks/useRedux';
-import { Users, BarChart3, Settings, Briefcase, X, Home, FileEdit, Calendar, CheckSquare } from 'lucide-react';
+import { Users, BarChart3, Settings, Briefcase, X, Home, FileEdit, Calendar, CheckSquare, CalendarCheck, TreePalm } from 'lucide-react';
 import { toggleSidebar } from '../../lib/slices/uiSlice';
 import { ROUTES, COMPANY_NAME } from '../../lib/constants';
 
@@ -13,6 +13,7 @@ const navigation = [
   { name: 'Tasks', href: '/dashboard/tasks', icon: CheckSquare },
   { name: 'Employees', href: ROUTES.EMPLOYEES, icon: Users },
   { name: 'Departments', href: '/dashboard/departments', icon: Briefcase },
+  { name: 'Holidays', href: '/dashboard/holidays', icon:  TreePalm },
   { name: 'Corrections', href: '/dashboard/corrections', icon: FileEdit },
   { name: 'Reports', href: ROUTES.REPORTS, icon: BarChart3 },
   { name: 'Settings', href: ROUTES.SETTINGS, icon: Settings },
