@@ -55,7 +55,7 @@ A comprehensive employee attendance monitoring system with admin dashboard and m
    npm run dev
    ```
 
-   Server runs on: http://localhost:5000
+   Server runs on: http://192.168.31.75:5000
 
    **Terminal 2 - Start Admin Dashboard:**
 
@@ -64,10 +64,10 @@ A comprehensive employee attendance monitoring system with admin dashboard and m
    npm run dev
    ```
 
-   Admin Dashboard runs on: http://localhost:3000
+   Admin Dashboard runs on: http://192.168.31.75:3000
 6. **Login to Admin Dashboard**
 
-   - Open: http://localhost:3000/auth/login
+   - Open: http://192.168.31.75:3000/auth/login
    - Use the admin credentials created in step 4
 
 ---
@@ -105,7 +105,7 @@ PORT=5000
 NODE_ENV=development
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/tmbc-attendance
+MONGODB_URI=mongodb://192.168.31.75:27017/tmbc-attendance
 
 # JWT Secret (generate a strong random string)
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -115,7 +115,7 @@ FIRST_ADMIN_EMAIL=admin@tmbc.com
 FIRST_ADMIN_PASSWORD=Admin@123456
 
 # Admin Dashboard URL
-ADMIN_URL=http://localhost:3000
+ADMIN_URL=http://192.168.31.75:3000
 
 # Email Configuration (for employee invitations)
 SMTP_HOST=smtp.gmail.com

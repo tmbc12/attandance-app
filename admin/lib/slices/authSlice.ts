@@ -33,7 +33,7 @@ export const login = createAsyncThunk<
   async ({ email, password }, { rejectWithValue }) => {
     try {
       // First, try to authenticate directly to get the actual error message
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://192.168.31.75:5000';
       const loginResponse = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: {

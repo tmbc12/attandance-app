@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const verifyOrganization = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tmbc-attendance');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://192.168.31.75:27017/tmbc-attendance');
 
     console.log('🔍 Checking organization accounts...\n');
 

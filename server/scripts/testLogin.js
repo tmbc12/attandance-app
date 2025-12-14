@@ -5,7 +5,7 @@ const testLogin = async () => {
   try {
     const email = process.env.FIRST_ADMIN_EMAIL || 'admin@tmbc.com';
     const password = process.env.FIRST_ADMIN_PASSWORD || 'Admin@123456';
-    const serverUrl = `http://localhost:${process.env.PORT || 5000}`;
+    const serverUrl = `http://192.168.31.75:${process.env.PORT || 5000}`;
 
     console.log('🧪 Testing Organization Login...\n');
     console.log('Server URL:', serverUrl);

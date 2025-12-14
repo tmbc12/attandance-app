@@ -16,7 +16,7 @@ cp env.example .env
 Edit `.env` and update the following:
 ```env
 # Database
-MONGODB_URI=mongodb://localhost:27017/tmbc-attendance
+MONGODB_URI=mongodb://192.168.31.75:27017/tmbc-attendance
 
 # JWT Secret (generate a strong random string)
 JWT_SECRET=your-super-secret-jwt-key-here
@@ -58,7 +58,7 @@ This will create a super admin account with the credentials from your `.env` fil
 🔑 Password: Admin@123456
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️  IMPORTANT: Please change the password after first login!
-🌐 Login at: http://localhost:3000/auth/login
+🌐 Login at: http://192.168.31.75:3000/auth/login
 ```
 
 ### 5. Start the Server
@@ -70,10 +70,10 @@ npm run dev
 npm start
 ```
 
-Server will start on: `http://localhost:5000`
+Server will start on: `http://192.168.31.75:5000`
 
 ### 6. Access Admin Dashboard
-1. Open your browser and go to: `http://localhost:3000/auth/login`
+1. Open your browser and go to: `http://192.168.31.75:3000/auth/login`
 2. Login with the admin credentials
 3. **Important:** Change your password immediately after first login!
 

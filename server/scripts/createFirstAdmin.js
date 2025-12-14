@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const createFirstOrganization = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tmbc-attendance');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://192.168.31.75:27017/tmbc-attendance');
 
     console.log('🔍 Checking for existing organization...');
     const orgCount = await Organization.countDocuments();
@@ -40,7 +40,7 @@ const createFirstOrganization = async () => {
       console.log('🔑 Password:', password);
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('⚠️  IMPORTANT: Please change the password after first login!');
-      console.log('🌐 Login at: http://localhost:3000/auth/login');
+      console.log('🌐 Login at: http://192.168.31.75:3000/auth/login');
     } else {
       console.log('ℹ️  Organization already exists. Skipping creation.');
       const existingOrg = await Organization.findOne().select('name email role');

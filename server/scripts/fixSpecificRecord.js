@@ -6,7 +6,7 @@ require('dotenv').config();
 async function fixSpecificRecord() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/attendance-app');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://192.168.31.75:27017/attendance-app');
     console.log('✅ Connected to MongoDB');
 
     // Find the problematic record

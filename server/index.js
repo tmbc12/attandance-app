@@ -15,7 +15,7 @@ app.set("trust proxy", 1);
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: [process.env.ADMIN_URL || 'http://localhost:3000', process.env.USER_URL || 'http://localhost:8081'],
+  origin: [process.env.ADMIN_URL || 'http://192.168.31.75:3000', process.env.USER_URL || 'http://192.168.31.75:8081'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -47,7 +47,7 @@ const inviteLimiter = rateLimit({
 });
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tmbc-attendance')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://192.168.31.75:27017/tmbc-attendance')
 .then(() => {
   console.log('MongoDB connected');
 
