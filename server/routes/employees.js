@@ -521,6 +521,144 @@ router.get('/verify-invite/:token', async (req, res) => {
   }
 });
 
+// @route   GET /api/employees/invite/:token
+// @desc    Redirect to mobile app via deep link (for email compatibility)
+// @access  Public
+router.get('/invite/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    // Hash the token
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Find employee with this token
+    const employee = await Employee.findOne({
+      'invitation.tokenHash': tokenHash,
+      'invitation.status': 'invited',
+      'invitation.expiresAt': { $gt: new Date() }
+    })
+    .populate('organization', 'name');
+
+    const deepLink = `tmbc://register?token=${token}`;
+    const webUrl = `${process.env.ADMIN_URL}/invite?token=${token}`;
+    const companyName = employee?.organization?.name || 'Teambo';
+
+    // If invalid token, redirect to error page or web URL
+    if (!employee) {
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Invalid Invitation</title>
+          <style>
+            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
+            .container { background: white; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto; }
+            .error { color: #ef4444; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1 class="error">Invalid Invitation</h1>
+            <p>This invitation link is invalid or has expired.</p>
+            <a href="${webUrl}" style="color: #2563eb;">Try web registration</a>
+          </div>
+        </body>
+        </html>
+      `);
+    }
+
+    // Serve HTML page that redirects to deep link
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Opening ${companyName}...</title>
+        <meta http-equiv="refresh" content="2;url=${deepLink}">
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+          }
+          .container {
+            text-align: center;
+            padding: 40px;
+          }
+          .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          .fallback {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+          }
+          .fallback a {
+            color: white;
+            text-decoration: underline;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="spinner"></div>
+          <h1>Opening ${companyName}...</h1>
+          <p>If the app doesn't open automatically, click the link below:</p>
+          <div class="fallback">
+            <a href="${deepLink}" id="deepLink">Open in Mobile App</a>
+            <br><br>
+            <a href="${webUrl}" style="opacity: 0.8;">Or complete registration on web</a>
+          </div>
+        </div>
+        <script>
+          // Try to open deep link immediately
+          window.location.href = '${deepLink}';
+          
+          // Fallback: If still on page after 3 seconds, show manual link
+          setTimeout(function() {
+            document.getElementById('deepLink').style.fontSize = '20px';
+            document.getElementById('deepLink').style.fontWeight = 'bold';
+          }, 3000);
+        </script>
+      </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error('Invite redirect error:', error);
+    res.status(500).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Error</title>
+      </head>
+      <body>
+        <h1>Error</h1>
+        <p>Something went wrong. Please try again later.</p>
+      </body>
+      </html>
+    `);
+  }
+});
+
 // @route   POST /api/employees/verify-code
 // @desc    Verify invitation code
 // @access  Public

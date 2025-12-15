@@ -38,6 +38,7 @@ export default function RegisterScreen() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [shouldRedirectOnError, setShouldRedirectOnError] = useState(false);
 
   useEffect(() => {
     verifyInviteToken();
@@ -46,10 +47,8 @@ export default function RegisterScreen() {
   const verifyInviteToken = async () => {
     if (!token) {
       setErrorMessage('Invalid invitation link');
+      setShouldRedirectOnError(true);
       setShowErrorModal(true);
-      setTimeout(() => {
-        router.replace('/(auth)/login');
-      }, 2000);
       return;
     }
 
@@ -57,13 +56,20 @@ export default function RegisterScreen() {
       const data = await authAPI.verifyInvite(token);
       setInviteData(data);
       setName(data.employee?.name || '');
-      setLoading(false);
     } catch (error: any) {
       setErrorMessage(error.response?.data?.message || 'This invitation link is invalid or expired');
+      setShouldRedirectOnError(true);
       setShowErrorModal(true);
-      setTimeout(() => {
-        router.replace('/(auth)/login');
-      }, 2000);
+    }finally{
+      setLoading(false);
+    }
+  };
+
+  const handleErrorModalClose = () => {
+    setShowErrorModal(false);
+    if (shouldRedirectOnError) {
+      setShouldRedirectOnError(false);
+      router.replace('/(auth)/login');
     }
   };
 
@@ -71,24 +77,28 @@ export default function RegisterScreen() {
     // Validation
     if (!name.trim()) {
       setErrorMessage('Please enter your name');
+      setShouldRedirectOnError(false);
       setShowErrorModal(true);
       return;
     }
 
     if (password.length < 6) {
       setErrorMessage('Password must be at least 6 characters');
+      setShouldRedirectOnError(false);
       setShowErrorModal(true);
       return;
     }
 
     if (password !== confirmPassword) {
       setErrorMessage('Passwords do not match');
+      setShouldRedirectOnError(false);
       setShowErrorModal(true);
       return;
     }
 
     if (!acceptedTerms) {
       setErrorMessage('Please accept the terms and conditions');
+      setShouldRedirectOnError(false);
       setShowErrorModal(true);
       return;
     }
@@ -100,6 +110,7 @@ export default function RegisterScreen() {
       setShowSuccessModal(true);
     } catch (error: any) {
       setErrorMessage(error || 'Registration failed. Please try again.');
+      setShouldRedirectOnError(false);
       setShowErrorModal(true);
     } finally {
       setSubmitting(false);
@@ -320,12 +331,12 @@ export default function RegisterScreen() {
         visible={showErrorModal}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setShowErrorModal(false)}
+        onRequestClose={handleErrorModalClose}
       >
         <TouchableOpacity
           style={styles.errorModalOverlay}
           activeOpacity={1}
-          onPress={() => setShowErrorModal(false)}
+          onPress={handleErrorModalClose}
         >
           <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
             <View style={styles.errorModalContent}>
@@ -336,7 +347,7 @@ export default function RegisterScreen() {
               <Text style={styles.errorModalMessage}>{errorMessage}</Text>
               <TouchableOpacity
                 style={styles.errorModalButton}
-                onPress={() => setShowErrorModal(false)}
+                onPress={handleErrorModalClose}
               >
                 <LinearGradient
                   colors={['#EF4444', '#F97316']}

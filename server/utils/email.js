@@ -14,6 +14,10 @@ const getInviteEmailTemplate = (name, token, companyName = 'Teambo') => {
   // Create both web fallback and deep link
   const webUrl = `${process.env.ADMIN_URL}/invite?token=${token}`;
   const deepLink = `tmbc://register?token=${token}`;
+  // Use API redirect URL for email compatibility (email clients don't handle custom schemes well)
+  // This URL will redirect to the deep link, working better in email clients
+  const serverUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+  const redirectUrl = `${serverUrl}/api/employees/invite/${token}`;
   // Use tokenHash for the short code (first 8 chars of hashed token)
   const crypto = require('crypto');
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -51,8 +55,13 @@ const getInviteEmailTemplate = (name, token, companyName = 'Teambo') => {
           </div>
           
           <div class="warning">
-            <strong>For Mobile App Users:</strong> If you have the Teambo mobile app installed, copy and paste this link into your browser:
-            <div class="code" style="word-break: break-all; font-size: 14px; padding: 8px; background: #f3f4f6; border-radius: 4px; margin: 10px 0;">${deepLink}</div>
+            <strong>For Mobile App Users:</strong> If you have the Teambo mobile app installed, click the button below to open the app directly:
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${redirectUrl}" class="button" style="display: inline-block; margin: 10px; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Open in Mobile App</a>
+            </div>
+            <p style="font-size: 12px; color: #6b7280; margin-top: 10px; text-align: center;">
+              Note: This will only work if the Teambo app is installed on your device. If the app doesn't open, you can use the web option above.
+            </p>
           </div>
           
           <div class="warning">
