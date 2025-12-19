@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Download, Search, CheckSquare, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, Download, Search, CheckSquare, Clock, AlertCircle, Plus } from 'lucide-react';
 import api from '../../../lib/api';
 import  { formatDuration } from '../../../components/tasks/TaskCard';
 import { TaskGroup } from '@/types/task';
 import EmployeeCard from '@/components/tasks/employeeCard';
+import { useAppDispatch } from '@/lib/hooks/useRedux';
+import { openModal } from '@/lib/slices/uiSlice';
 
 interface Task {
   _id: string;
@@ -32,6 +34,7 @@ interface Task {
 }
 
 export default function TasksPage() {
+  const dispatch = useAppDispatch();
   const [employeeWiseTask, setEmployeeWiseTask] = useState<TaskGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
@@ -178,11 +181,22 @@ export default function TasksPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Daily Tasks</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Track and manage employee tasks
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Daily Tasks</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Track and manage employee tasks
+          </p>
+        </div>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => dispatch(openModal({ modal: 'assignTask' }))}
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Assign New Task
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}

@@ -47,6 +47,7 @@ interface UiState {
     addHoliday: boolean;
     editHoliday: boolean;
     deleteHolidayConfirm: boolean;
+    assignTask: boolean;
   };
   selectedEmployee: Employee | null;
   selectedDepartment: Department | null;
@@ -73,7 +74,8 @@ const initialState: UiState = {
     deleteDepartmentConfirm: false,
     addHoliday: false,
     editHoliday: false,
-    deleteHolidayConfirm: false
+    deleteHolidayConfirm: false,
+    assignTask: false
   },
   selectedEmployee: null,
   selectedDepartment: null,
