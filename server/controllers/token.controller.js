@@ -1,7 +1,7 @@
-import ExpoToken from "../models/ExpoToken.js";
+// import ExpoToken from "../models/ExpoToken.js";
+const {ExpoToken} = require("../models/ExpoToken.js");
 
-
-export const saveExpoToken = async (req, res) => {
+const saveExpoToken = async (req, res) => {
   try {
     const { userId, token } = req.body;
 
@@ -41,3 +41,5 @@ export const saveExpoToken = async (req, res) => {
     });
   }
 };
+
+module.exports = { saveExpoToken };

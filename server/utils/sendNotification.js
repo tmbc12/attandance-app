@@ -26,4 +26,4 @@ async function sendPushNotification(pushToken, message) {
   }
 }
 
-export default sendPushNotification;
+module.exports = sendPushNotification;
