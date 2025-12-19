@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const expoTokenSchema = new mongoose.Schema(
   {
@@ -21,4 +22,4 @@ const expoTokenSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("ExpoToken", expoTokenSchema);
+module.exports = mongoose.model("ExpoToken", expoTokenSchema);

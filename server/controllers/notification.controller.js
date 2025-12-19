@@ -1,7 +1,7 @@
-import sendPushNotification from "../utils/sendNotification.js";
+// import sendPushNotification from "../utils/sendNotification.js";
+const {sendPushNotification} = require("../utils/sendNotification.js");
 
-
-export const sendNotification = async (req, res) => {
+const sendNotification = async (req, res) => {
   try {
     const {token, title, body, data } = req.body;
 
@@ -25,3 +25,5 @@ body
     });
   }
 };
+
+module.exports = { sendNotification };
