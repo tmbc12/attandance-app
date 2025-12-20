@@ -6,6 +6,7 @@ import { useAppSelector, useAppDispatch } from '../../lib/hooks/useRedux';
 import { Users, BarChart3, Settings, Briefcase, X, Home, FileEdit, Calendar, CheckSquare, CalendarCheck, TreePalm } from 'lucide-react';
 import { toggleSidebar } from '../../lib/slices/uiSlice';
 import { ROUTES, COMPANY_NAME } from '../../lib/constants';
+import Image from 'next/image';
 
 const navigation = [
   { name: 'Dashboard', href: ROUTES.DASHBOARD, icon: Home },
@@ -41,7 +42,16 @@ export default function Sidebar() {
         lg:translate-x-0 lg:static lg:inset-0
       `}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">{COMPANY_NAME} Admin</h1>
+          {/* <h1 className="text-xl font-bold text-gray-900">{COMPANY_NAME} Admin</h1> */}
+          <div className="flex items-center justify-center">
+            <Image
+              src="/text_light.png"
+              alt="Logo"
+              width={100}
+              height={30}
+              className="object-contain w-auto"
+            />
+            </div>
           <button
             className="lg:hidden"
             onClick={() => dispatch(toggleSidebar())}
