@@ -12,6 +12,7 @@ import BulkInviteModal from './BulkInviteModal';
 import AddHolidayModal from './AddHolidayModal';
 import EditHolidayModal from './EditHolidayModal';
 import DeleteHolidayConfirmModal from './DeleteHolidayConfirmModal';
+import AssignTaskModal from './AssignTaskModal';
 
 export default function ModalProvider() {
   const modals = useAppSelector((state) => state.ui.modals);
@@ -29,6 +30,7 @@ export default function ModalProvider() {
       {modals.addHoliday && <AddHolidayModal />}
       {modals.editHoliday && <EditHolidayModal />}
       {modals.deleteHolidayConfirm && <DeleteHolidayConfirmModal />}
+      {modals.assignTask && <AssignTaskModal />}
     </>
   );
 }
