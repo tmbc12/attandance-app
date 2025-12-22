@@ -68,7 +68,7 @@ export default function Sidebar() {
                 >
                   <item.icon
                     className={`
-                      mr-3 h-5 w-5 flex-shrink-0
+                      mr-3 h-5 w-5 shrink-0
                       ${isActive ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-500'}
                     `}
                   />
@@ -82,7 +82,7 @@ export default function Sidebar() {
         {/* User info at bottom */}
         <div className="absolute bottom-0 w-full p-4 border-t border-gray-200">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
                 <span className="text-sm font-medium text-white">A</span>
               </div>

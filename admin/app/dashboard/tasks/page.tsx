@@ -281,7 +281,7 @@ export default function TasksPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                 <CheckSquare className="h-6 w-6 text-blue-600" />
               </div>
@@ -295,7 +295,7 @@ export default function TasksPage() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
                 <CheckSquare className="h-6 w-6 text-green-600" />
               </div>
@@ -311,7 +311,7 @@ export default function TasksPage() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                 <Clock className="h-6 w-6 text-blue-600" />
               </div>
@@ -327,7 +327,7 @@ export default function TasksPage() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
                 <AlertCircle className="h-6 w-6 text-yellow-600" />
               </div>
@@ -378,7 +378,7 @@ export default function TasksPage() {
                   | "paused"
               )
             }
-            className="px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M6%209L1%204h10z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_0.75rem_center] bg-no-repeat"
+            className="px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M6%209L1%204h10z%22%2F%3E%3C%2Fsvg%3E')] bg-size-[12px_12px] bg-position-[right_0.75rem_center] bg-no-repeat"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -394,7 +394,7 @@ export default function TasksPage() {
                 e.target.value as "all" | "low" | "medium" | "high" | "urgent"
               )
             }
-            className="px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M6%209L1%204h10z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_0.75rem_center] bg-no-repeat"
+            className="px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M6%209L1%204h10z%22%2F%3E%3C%2Fsvg%3E')] bg-size-[12px_12px] bg-position-[right_0.75rem_center] bg-no-repeat"
           >
             <option value="all">All Priority</option>
             <option value="urgent">Urgent</option>

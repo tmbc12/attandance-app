@@ -123,7 +123,7 @@ export default function AssignTaskModal() {
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-white to-gray-50 shadow-sm"
+                  className="border border-gray-200 rounded-lg p-4 bg-linear-to-br from-white to-gray-50 shadow-sm"
                 >
                   {/* Task Header */}
                   <div className="flex items-center justify-between mb-3">
