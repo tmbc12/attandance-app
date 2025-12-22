@@ -55,8 +55,8 @@ export const EMPLOYEE_STATUS = {
 // User Roles
 export const USER_ROLES = {
   SUPER_ADMIN: 'super_admin',
-  ADMIN: 'admin',
   MANAGER: 'manager',
+  TEAM_LEAD: 'team_lead',
 } as const;
 
 // Permissions

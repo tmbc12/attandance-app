@@ -72,7 +72,7 @@ export interface Employee {
   _id: string;
   name: string;
   email: string;
-  role: 'employee' | 'manager' | 'admin' | 'tl';
+  role: 'employee' | 'manager' | 'team_lead';
   status: 'active' | 'pending' | 'inactive';
   createdAt: string;
   updatedAt: string;

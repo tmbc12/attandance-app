@@ -41,7 +41,8 @@ const organizationSchema = new mongoose.Schema({
       'manage_invites',
       'view_reports',
       'manage_settings',
-      'bulk_operations'
+      'bulk_operations',
+      'assign_tasks'
     ]
   }],
   settings: {
