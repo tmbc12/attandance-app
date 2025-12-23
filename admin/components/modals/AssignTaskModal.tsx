@@ -5,22 +5,12 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { X, Plus, Calendar, User, Tag, AlertCircle } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks/useRedux";
 import { closeModal } from "@/lib/slices/uiSlice";
+import { assignTask, AssignTaskData } from "@/lib/slices/taskSlice";
 
 /* ------------------ Types ------------------ */
 
-type Priority = "low" | "medium" | "high" | "urgent";
-
-interface TaskItem {
-  title: string;
-  description: string;
-  priority: Priority;
-  dueDate: string;
-  tags: string;
-  employeeId: string;
-}
-
 interface AssignTaskForm {
-  tasks: TaskItem[];
+  tasks: AssignTaskData[];
 }
 
 /* ------------------ Mock Data ------------------ */
@@ -81,10 +71,13 @@ export default function AssignTaskModal() {
     }
   }, [isOpen, reset]);
 
-  const onSubmit = (data: AssignTaskForm) => {
-    console.log("Assigned Tasks:", data);
-    alert("Tasks assigned successfully!");
-    // setIsOpen(false);
+  const onSubmit = async (data: AssignTaskForm) => {
+    try {
+      await dispatch(assignTask(data.tasks)).unwrap();
+      handleClose();
+    } catch (error) {
+      console.error("Failed to assign tasks:", error);
+    }
   };
 
   const handleClose = () => {

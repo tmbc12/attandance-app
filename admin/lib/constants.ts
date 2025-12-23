@@ -43,6 +43,10 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/holidays/${id}`,
     DELETE: (id: string) => `/api/holidays/${id}`,
   },
+  TASKS: {
+    ASSIGN: '/api/tasks/assign',
+    LIST: '/api/tasks',
+  },
 } as const;
 
 // Employee Status

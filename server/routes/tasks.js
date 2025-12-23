@@ -81,21 +81,31 @@ router.post(
   auth,
   requirePermission("assign_tasks"),
   async (req, res) => {
-    const { tasks } = req.body; // Expecting an array of tasks with employeeId and task details
+    const { tasks } = req.body;
+
     try {
-      const createdTasks = [];
+      const organizationId = req.user._id;
+      const createdTaskIds = [];
+
+      /* ------------------ Create Tasks ------------------ */
 
       for (const task of tasks) {
         const { employeeId, ...taskData } = task;
-        const employee = await Employee.findById(employeeId);
+
+        const employee = await Employee.findOne({
+          _id: employeeId,
+          organization: organizationId,
+        });
+
         if (!employee) {
-          return res
-            .status(404)
-            .json({ message: `Employee with ID ${employeeId} not found` });
+          return res.status(404).json({
+            message: `Employee with ID ${employeeId} not found`,
+          });
         }
+
         const newTask = new Task({
           employee: employee._id,
-          organization: req.user._id,
+          organization: organizationId,
           startTime: new Date().toISOString(),
           pauseTime: new Date().toISOString(),
           dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
@@ -109,19 +119,90 @@ router.post(
           ...taskData,
           date: moment().startOf("day").toDate(),
         });
+
         await newTask.save();
-        createdTasks.push(newTask);
+        createdTaskIds.push(newTask._id);
       }
 
+      /* ------------------ Employee-wise Response ------------------ */
+
+      const employeeWiseTasks = await Task.aggregate([
+        {
+          $match: {
+            _id: { $in: createdTaskIds },
+            organization: organizationId,
+          },
+        },
+
+        { $sort: { createdAt: -1 } },
+
+        {
+          $group: {
+            _id: "$employee",
+            tasks: { $push: "$$ROOT" },
+            taskCount: { $sum: 1 },
+          },
+        },
+
+        // Employee lookup
+        {
+          $lookup: {
+            from: "employees",
+            localField: "_id",
+            foreignField: "_id",
+            as: "employee",
+          },
+        },
+        { $unwind: "$employee" },
+
+        // Department lookup
+        {
+          $lookup: {
+            from: "departments",
+            localField: "employee.department",
+            foreignField: "_id",
+            as: "department",
+          },
+        },
+        {
+          $unwind: {
+            path: "$department",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+
+        // Final shape
+        {
+          $project: {
+            _id: 0,
+            employee: {
+              _id: "$employee._id",
+              name: "$employee.name",
+              email: "$employee.email",
+              employeeId: "$employee.employeeId",
+              department: {
+                _id: "$department._id",
+                name: "$department.name",
+                colorCode: "$department.colorCode",
+              },
+            },
+            taskCount: 1,
+            tasks: 1,
+          },
+        },
+      ]);
+
       res.status(201).json({
-        message: "Tasks created successfully",
-        tasks: createdTasks,
+        success: true,
+        message: "Tasks assigned successfully",
+        employeeWiseTasks,
       });
     } catch (error) {
-      console.error("Error creating tasks:", error);
-      res
-        .status(500)
-        .json({ message: "Error creating tasks", error: error.message });
+      console.error("Error assigning tasks:", error);
+      res.status(500).json({
+        message: "Error assigning tasks",
+        error: error.message,
+      });
     }
   }
 );

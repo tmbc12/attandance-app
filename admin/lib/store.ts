@@ -4,6 +4,7 @@ import employeeSlice from './slices/employeeSlice';
 import departmentSlice from './slices/departmentSlice';
 import holidaySlice from './slices/holidaySlice';
 import uiSlice from './slices/uiSlice';
+import taskSlice from './slices/taskSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     departments: departmentSlice,
     holidays: holidaySlice,
     ui: uiSlice,
+    tasks: taskSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

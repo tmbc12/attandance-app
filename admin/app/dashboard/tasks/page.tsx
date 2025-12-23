@@ -10,15 +10,15 @@ import {
   AlertCircle,
   Plus,
 } from "lucide-react";
-import api from "../../../lib/api";
 import { formatDuration } from "../../../components/tasks/TaskCard";
 import { TaskGroup } from "@/types/task";
 import EmployeeCard from "@/components/tasks/employeeCard";
-import { useAppDispatch } from "@/lib/hooks/useRedux";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/useRedux";
 import { openModal } from "@/lib/slices/uiSlice";
 import { fetchEmployees } from "@/lib/slices/employeeSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import { fetchEmployeeWiseTasks } from "@/lib/slices/taskSlice";
 
 interface Task {
   _id: string;
@@ -47,7 +47,7 @@ interface Task {
 export default function TasksPage() {
   const dispatch = useAppDispatch();
   const { filters } = useSelector((state: RootState) => state.employees);
-  const [employeeWiseTask, setEmployeeWiseTask] = useState<TaskGroup[]>([]);
+  const { employeeWiseTask } = useAppSelector((state) => state.tasks);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -63,16 +63,13 @@ export default function TasksPage() {
   const loadTasksData = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get("/api/tasks/employee-wise", {
-        params: {
-          date: selectedDate,
-          status: statusFilter,
-          priority: priorityFilter,
-        },
-      });
-      console.log("response", JSON.stringify(response.data));
-      setEmployeeWiseTask(response.data.employeeWiseTasks || []);
-      // setTasks(response.data.tasks || []);
+      await dispatch(
+        fetchEmployeeWiseTasks({
+          selectedDate,
+          statusFilter,
+          priorityFilter,
+        })
+      );
     } catch (error) {
       console.error("Error loading tasks:", error);
     } finally {
@@ -82,7 +79,7 @@ export default function TasksPage() {
 
   useEffect(() => {
     loadTasksData();
-  }, [selectedDate, statusFilter, priorityFilter]);
+  }, [selectedDate, statusFilter, priorityFilter, dispatch]);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
