@@ -10,388 +10,388 @@ const router = express.Router();
 // // @route   POST /api/auth/callback/credentials
 // // @desc    NextAuth credentials callback (for admin web app)
 // // @access  Public
-// router.post('/callback/credentials', async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
+router.post('/callback/credentials', async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-//     if (!email || !password) {
-//       return res.status(400).json({
-//         error: 'ValidationError',
-//         message: 'Please provide both email and password'
-//       });
-//     }
+    if (!email || !password) {
+      return res.status(400).json({
+        error: 'ValidationError',
+        message: 'Please provide both email and password'
+      });
+    }
 
-//     const organization = await Organization.findOne({ email, isActive: true });
-//     if (!organization) {
-//       return res.status(401).json({
-//         error: 'InvalidCredentials',
-//         message: 'Invalid email or password. Please check your credentials and try again.'
-//       });
-//     }
+    const organization = await Organization.findOne({ email, isActive: true });
+    if (!organization) {
+      return res.status(401).json({
+        error: 'InvalidCredentials',
+        message: 'Invalid email or password. Please check your credentials and try again.'
+      });
+    }
 
-//     const isMatch = await organization.comparePassword(password);
-//     if (!isMatch) {
-//       return res.status(401).json({
-//         error: 'InvalidCredentials',
-//         message: 'Invalid email or password. Please check your credentials and try again.'
-//       });
-//     }
+    const isMatch = await organization.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({
+        error: 'InvalidCredentials',
+        message: 'Invalid email or password. Please check your credentials and try again.'
+      });
+    }
 
-//     // Update last login
-//     organization.lastLogin = new Date();
-//     await organization.save();
+    // Update last login
+    organization.lastLogin = new Date();
+    await organization.save();
 
-//     const payload = {
-//       id: organization._id,
-//       email: organization.email,
-//       role: organization.role,
-//       permissions: organization.permissions
-//     };
+    const payload = {
+      id: organization._id,
+      email: organization.email,
+      role: organization.role,
+      permissions: organization.permissions
+    };
 
-//     const token = jwt.sign(payload, process.env.JWT_SECRET || 'fallback-secret', {
-//       expiresIn: '30d' // 30 days (1 month)
-//     });
+    const token = jwt.sign(payload, process.env.JWT_SECRET || 'fallback-secret', {
+      expiresIn: '30d' // 30 days (1 month)
+    });
 
-//     res.json({
-//       token,
-//       admin: {
-//         id: organization._id,
-//         name: organization.name,
-//         email: organization.email,
-//         role: organization.role,
-//         permissions: organization.permissions
-//       }
-//     });
-//   } catch (error) {
-//     console.error('Login error:', error);
-//     res.status(500).json({
-//       error: 'ServerError',
-//       message: 'An error occurred during login. Please try again later.'
-//     });
-//   }
-// });
+    res.json({
+      token,
+      admin: {
+        id: organization._id,
+        name: organization.name,
+        email: organization.email,
+        role: organization.role,
+        permissions: organization.permissions
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      error: 'ServerError',
+      message: 'An error occurred during login. Please try again later.'
+    });
+  }
+});
 
 // @route   POST /api/auth/callback/credentials
 // @desc    NextAuth credentials callback (Admin + Employee)
 // @access  Public
-router.post("/callback/credentials", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    console.log("📱 Login attempt:", { email, password });
-
-    if (!email || !password) {
-      return res.status(400).json({
-        error: "ValidationError",
-        message: "Please provide both email and password",
-      });
-    }
-
-    /* =========================
-       1️⃣ Try Organization Admin
-       ========================= */
-
-    const organization = await Organization.findOne({
-      email,
-      isActive: true,
-    });
-
-    if (organization) {
-      const isMatch = await organization.comparePassword(password);
-      if (!isMatch) {
-        return res.status(401).json({
-          error: "InvalidCredentials",
-          message: "Invalid email or password.",
-        });
-      }
-
-      organization.lastLogin = new Date();
-      await organization.save();
-
-      const payload = {
-        id: organization._id,
-        email: organization.email,
-        role: organization.role,
-        permissions: organization.permissions,
-        organizationId: organization._id,
-        // userType: "admin",
-      };
-
-      const token = jwt.sign(
-        payload,
-        process.env.JWT_SECRET || "fallback-secret",
-        { expiresIn: "30d" }
-      );
-
-      return res.json({
-        token,
-        // userType: "admin",
-        user: {
-          id: organization._id,
-          name: organization.name,
-          email: organization.email,
-          role: organization.role,
-          permissions: organization.permissions,
-        },
-      });
-    }
-
-    /* =========================
-       2️⃣ Try Employee (Manager / Team Lead)
-       ========================= */
-
-    const employee = await Employee.findOne({
-      email,
-      // isActive: true,
-      role: { $in: ["manager", "teamlead"] },
-    }).populate("organization", "name isActive");
-
-    if (!employee || !employee.organization?.isActive) {
-      return res.status(401).json({
-        error: "InvalidCredentials",
-        message: "Invalid email or password.",
-      });
-    }
-
-    const isEmployeeMatch = await employee.comparePassword(password);
-    if (!isEmployeeMatch) {
-      return res.status(401).json({
-        error: "InvalidCredentials",
-        message: "Invalid email or password.",
-      });
-    }
-
-    employee.lastLogin = new Date();
-    await employee.save();
-
-    const payload = {
-      id: employee._id,
-      email: employee.email,
-      role: employee.role, // manager | teamlead
-      permissions: employee.permissions,
-      organizationId: employee.organization._id,
-      employeeId: employee._id,
-      userType: "employee",
-    };
-
-    const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET || "fallback-secret",
-      { expiresIn: "30d" }
-    );
-
-    return res.json({
-      token,
-      // userType: "employee",
-      user: {
-        id: employee._id,
-        name: employee.name,
-        email: employee.email,
-        role: employee.role,
-        permissions: employee.permissions,
-        organization: {
-          id: employee.organization._id,
-          name: employee.organization.name,
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({
-      error: "ServerError",
-      message: "An error occurred during login. Please try again later.",
-    });
-  }
-});
-
-// @route   POST /api/auth/login
-// @desc    Organization login (alternative endpoint)
-// @access  Public
-// router.post('/login', async (req, res) => {
+// router.post("/callback/credentials", async (req, res) => {
 //   try {
 //     const { email, password } = req.body;
-//     console.log(email, password)
+//     console.log("📱 Login attempt:", { email, password });
+
 //     if (!email || !password) {
 //       return res.status(400).json({
-//         error: 'ValidationError',
-//         message: 'Please provide both email and password'
+//         error: "ValidationError",
+//         message: "Please provide both email and password",
 //       });
 //     }
 
-//     const organization = await Organization.findOne({ email, isActive: true });
-//     if (!organization) {
-//       return res.status(401).json({
-//         error: 'InvalidCredentials',
-//         message: 'Invalid email or password. Please check your credentials and try again.'
-//       });
-//     }
+//     /* =========================
+//        1️⃣ Try Organization Admin
+//        ========================= */
 
-//     const isMatch = await organization.comparePassword(password);
-//     if (!isMatch) {
-//       return res.status(401).json({
-//         error: 'InvalidCredentials',
-//         message: 'Invalid email or password. Please check your credentials and try again.'
-//       });
-//     }
-
-//     // Update last login
-//     organization.lastLogin = new Date();
-//     await organization.save();
-
-//     const payload = {
-//       id: organization._id,
-//       email: organization.email,
-//       role: organization.role,
-//       permissions: organization.permissions
-//     };
-
-//     const token = jwt.sign(payload, process.env.JWT_SECRET || 'fallback-secret', {
-//       expiresIn: '30d' // 30 days (1 month)
+//     const organization = await Organization.findOne({
+//       email,
+//       isActive: true,
 //     });
 
-//     res.json({
-//       token,
-//       admin: {
+//     if (organization) {
+//       const isMatch = await organization.comparePassword(password);
+//       if (!isMatch) {
+//         return res.status(401).json({
+//           error: "InvalidCredentials",
+//           message: "Invalid email or password.",
+//         });
+//       }
+
+//       organization.lastLogin = new Date();
+//       await organization.save();
+
+//       const payload = {
 //         id: organization._id,
-//         name: organization.name,
 //         email: organization.email,
 //         role: organization.role,
-//         permissions: organization.permissions
-//       }
+//         permissions: organization.permissions,
+//         organizationId: organization._id,
+//         // userType: "admin",
+//       };
+
+//       const token = jwt.sign(
+//         payload,
+//         process.env.JWT_SECRET || "fallback-secret",
+//         { expiresIn: "30d" }
+//       );
+
+//       return res.json({
+//         token,
+//         // userType: "admin",
+//         user: {
+//           id: organization._id,
+//           name: organization.name,
+//           email: organization.email,
+//           role: organization.role,
+//           permissions: organization.permissions,
+//         },
+//       });
+//     }
+
+//     /* =========================
+//        2️⃣ Try Employee (Manager / Team Lead)
+//        ========================= */
+
+//     const employee = await Employee.findOne({
+//       email,
+//       // isActive: true,
+//       role: { $in: ["manager", "teamlead"] },
+//     }).populate("organization", "name isActive");
+
+//     if (!employee || !employee.organization?.isActive) {
+//       return res.status(401).json({
+//         error: "InvalidCredentials",
+//         message: "Invalid email or password.",
+//       });
+//     }
+
+//     const isEmployeeMatch = await employee.comparePassword(password);
+//     if (!isEmployeeMatch) {
+//       return res.status(401).json({
+//         error: "InvalidCredentials",
+//         message: "Invalid email or password.",
+//       });
+//     }
+
+//     employee.lastLogin = new Date();
+//     await employee.save();
+
+//     const payload = {
+//       id: employee._id,
+//       email: employee.email,
+//       role: employee.role, // manager | teamlead
+//       permissions: employee.permissions,
+//       organizationId: employee.organization._id,
+//       employeeId: employee._id,
+//       userType: "employee",
+//     };
+
+//     const token = jwt.sign(
+//       payload,
+//       process.env.JWT_SECRET || "fallback-secret",
+//       { expiresIn: "30d" }
+//     );
+
+//     return res.json({
+//       token,
+//       // userType: "employee",
+//       user: {
+//         id: employee._id,
+//         name: employee.name,
+//         email: employee.email,
+//         role: employee.role,
+//         permissions: employee.permissions,
+//         organization: {
+//           id: employee.organization._id,
+//           name: employee.organization.name,
+//         },
+//       },
 //     });
 //   } catch (error) {
-//     console.error('Login error:', error);
+//     console.error("Login error:", error);
 //     res.status(500).json({
-//       error: 'ServerError',
-//       message: 'An error occurred during login. Please try again later.'
+//       error: "ServerError",
+//       message: "An error occurred during login. Please try again later.",
 //     });
 //   }
 // });
 
-router.post("/login", async (req, res) => {
+// @route   POST /api/auth/login
+// @desc    Organization login (alternative endpoint)
+// @access  Public
+router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    console.log(email, password)
     if (!email || !password) {
       return res.status(400).json({
-        error: "ValidationError",
-        message: "Please provide both email and password",
+        error: 'ValidationError',
+        message: 'Please provide both email and password'
       });
     }
 
-    /* =========================
-       1️⃣ Try Organization Admin
-       ========================= */
-
-    const organization = await Organization.findOne({
-      email,
-      isActive: true,
-    });
-
-    if (organization) {
-      const isMatch = await organization.comparePassword(password);
-      if (!isMatch) {
-        return res.status(401).json({
-          error: "InvalidCredentials",
-          message: "Invalid email or password.",
-        });
-      }
-
-      organization.lastLogin = new Date();
-      await organization.save();
-
-      const payload = {
-        id: organization._id,
-        role: organization.role,
-        email: organization.email,
-        permissions: organization.permissions,
-        organizationId: organization._id,
-      };
-
-      const token = jwt.sign(
-        payload,
-        process.env.JWT_SECRET || "fallback-secret",
-        { expiresIn: "30d" }
-      );
-
-      return res.json({
-        token,
-        userType: "admin",
-        admin: {
-          id: organization._id,
-          name: organization.name,
-          email: organization.email,
-          role: organization.role,
-          permissions: organization.permissions,
-        },
-      });
-    }
-
-    /* =========================
-       2️⃣ Try Employee Login
-       ========================= */
-
-    const employee = await Employee.findOne({
-      email,
-      // isActive: true,
-      role: { $in: ["team_lead", "manager"] },
-    }).populate("organization", "name email isActive");
-
-    if (!employee || !employee.organization?.isActive) {
+    const organization = await Organization.findOne({ email, isActive: true });
+    if (!organization) {
       return res.status(401).json({
-        error: "InvalidCredentials",
-        message: "Invalid email or password.",
+        error: 'InvalidCredentials',
+        message: 'Invalid email or password. Please check your credentials and try again.'
       });
     }
 
-    const isEmployeeMatch = await employee.comparePassword(password);
-    if (!isEmployeeMatch) {
+    const isMatch = await organization.comparePassword(password);
+    if (!isMatch) {
       return res.status(401).json({
-        error: "InvalidCredentials",
-        message: "Invalid email or password.",
+        error: 'InvalidCredentials',
+        message: 'Invalid email or password. Please check your credentials and try again.'
       });
     }
 
-    employee.lastLogin = new Date();
-    await employee.save();
+    // Update last login
+    organization.lastLogin = new Date();
+    await organization.save();
 
     const payload = {
-      id: employee._id,
-      email: employee.email,
-      role: employee.role, // teamlead | manager
-      permissions: employee.permissions,
-      organizationId: employee.organization._id,
-      employeeId: employee._id,
+      id: organization._id,
+      email: organization.email,
+      role: organization.role,
+      permissions: organization.permissions
     };
 
-    const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET || "fallback-secret",
-      { expiresIn: "30d" }
-    );
+    const token = jwt.sign(payload, process.env.JWT_SECRET || 'fallback-secret', {
+      expiresIn: '30d' // 30 days (1 month)
+    });
 
-    return res.json({
+    res.json({
       token,
-      userType: "employee",
       admin: {
-        id: employee._id,
-        name: employee.name,
-        email: employee.email,
-        role: employee.role,
-        permissions: employee.permissions,
-        organization: {
-          id: employee.organization._id,
-          name: employee.organization.name,
-        },
-      },
+        id: organization._id,
+        name: organization.name,
+        email: organization.email,
+        role: organization.role,
+        permissions: organization.permissions
+      }
     });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error('Login error:', error);
     res.status(500).json({
-      error: "ServerError",
-      message: "An error occurred during login. Please try again later.",
+      error: 'ServerError',
+      message: 'An error occurred during login. Please try again later.'
     });
   }
 });
+
+// router.post("/login", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     if (!email || !password) {
+//       return res.status(400).json({
+//         error: "ValidationError",
+//         message: "Please provide both email and password",
+//       });
+//     }
+
+//     /* =========================
+//        1️⃣ Try Organization Admin
+//        ========================= */
+
+//     const organization = await Organization.findOne({
+//       email,
+//       isActive: true,
+//     });
+
+//     if (organization) {
+//       const isMatch = await organization.comparePassword(password);
+//       if (!isMatch) {
+//         return res.status(401).json({
+//           error: "InvalidCredentials",
+//           message: "Invalid email or password.",
+//         });
+//       }
+
+//       organization.lastLogin = new Date();
+//       await organization.save();
+
+//       const payload = {
+//         id: organization._id,
+//         role: organization.role,
+//         email: organization.email,
+//         permissions: organization.permissions,
+//         organizationId: organization._id,
+//       };
+
+//       const token = jwt.sign(
+//         payload,
+//         process.env.JWT_SECRET || "fallback-secret",
+//         { expiresIn: "30d" }
+//       );
+
+//       return res.json({
+//         token,
+//         userType: "admin",
+//         admin: {
+//           id: organization._id,
+//           name: organization.name,
+//           email: organization.email,
+//           role: organization.role,
+//           permissions: organization.permissions,
+//         },
+//       });
+//     }
+
+//     /* =========================
+//        2️⃣ Try Employee Login
+//        ========================= */
+
+//     const employee = await Employee.findOne({
+//       email,
+//       // isActive: true,
+//       role: { $in: ["team_lead", "manager"] },
+//     }).populate("organization", "name email isActive");
+
+//     if (!employee || !employee.organization?.isActive) {
+//       return res.status(401).json({
+//         error: "InvalidCredentials",
+//         message: "Invalid email or password.",
+//       });
+//     }
+
+//     const isEmployeeMatch = await employee.comparePassword(password);
+//     if (!isEmployeeMatch) {
+//       return res.status(401).json({
+//         error: "InvalidCredentials",
+//         message: "Invalid email or password.",
+//       });
+//     }
+
+//     employee.lastLogin = new Date();
+//     await employee.save();
+
+//     const payload = {
+//       id: employee._id,
+//       email: employee.email,
+//       role: employee.role, // teamlead | manager
+//       permissions: employee.permissions,
+//       organizationId: employee.organization._id,
+//       employeeId: employee._id,
+//     };
+
+//     const token = jwt.sign(
+//       payload,
+//       process.env.JWT_SECRET || "fallback-secret",
+//       { expiresIn: "30d" }
+//     );
+
+//     return res.json({
+//       token,
+//       userType: "employee",
+//       admin: {
+//         id: employee._id,
+//         name: employee.name,
+//         email: employee.email,
+//         role: employee.role,
+//         permissions: employee.permissions,
+//         organization: {
+//           id: employee.organization._id,
+//           name: employee.organization.name,
+//         },
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     res.status(500).json({
+//       error: "ServerError",
+//       message: "An error occurred during login. Please try again later.",
+//     });
+//   }
+// });
 
 // @route   POST /api/auth/employee-login
 // @desc    Employee login
