@@ -98,6 +98,28 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="tasks"
+        options={{
+          title: 'Tasks',
+          tabBarIcon: ({ color, size, focused }) => (
+            focused ? (
+              <View style={styles.activeIconContainer}>
+                <LinearGradient
+                  colors={['#EF4444', '#F97316']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.activeIconGradient}
+                >
+                  <Ionicons name="list" size={24} color="#FFFFFF" />
+                </LinearGradient>
+              </View>
+            ) : (
+              <Ionicons name="list-outline" size={24} color={color} />
+            )
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
