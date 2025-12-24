@@ -264,7 +264,7 @@ router.get("/today", employeeAuth, async (req, res) => {
       date: { $gte: today, $lte: endOfDay },
       status: { $ne: "cancelled" },
       isArchived: { $ne: true },
-    }).sort({ priority: -1, createdAt: 1 });
+    }).populate("assignedBy", "name").sort({ priority: -1, createdAt: 1 });
 
     // Calculate statistics
     const stats = {

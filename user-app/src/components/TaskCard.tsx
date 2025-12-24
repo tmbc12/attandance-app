@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { Task } from '../api/tasks';
-import { useAppDispatch } from '../store/hooks';
-import { startTask, pauseTask, resumeTask, completeTask, deleteTask, updateTaskTimer } from '../store/slices/tasksSlice';
-import { formatSecondsToTime } from '../utils/timeFormat';
-import ConfirmModal from './common/ConfirmModal';
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { Task } from "../api/tasks";
+import { useAppDispatch } from "../store/hooks";
+import {
+  startTask,
+  pauseTask,
+  resumeTask,
+  completeTask,
+  deleteTask,
+  updateTaskTimer,
+} from "../store/slices/tasksSlice";
+import { formatSecondsToTime } from "../utils/timeFormat";
+import ConfirmModal from "./common/ConfirmModal";
 
 interface TaskCardProps {
   task: Task;
@@ -15,11 +22,17 @@ interface TaskCardProps {
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
   const dispatch = useAppDispatch();
-  const [currentTime, setCurrentTime] = useState(task.timeTracking.totalSeconds);
+  const [currentTime, setCurrentTime] = useState(
+    task.timeTracking.totalSeconds
+  );
   const [sessionStart, setSessionStart] = useState<number | null>(null);
-  const [baseTotalSeconds, setBaseTotalSeconds] = useState(task.timeTracking.totalSeconds);
+  const [baseTotalSeconds, setBaseTotalSeconds] = useState(
+    task.timeTracking.totalSeconds
+  );
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<'complete' | 'delete' | null>(null);
+  const [confirmAction, setConfirmAction] = useState<
+    "complete" | "delete" | null
+  >(null);
 
   // Update base total seconds when task changes
   useEffect(() => {
@@ -54,14 +67,22 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
 
-    if (task.status === 'in_progress' && task.timeTracking.currentSessionStart) {
-      const startTime = new Date(task.timeTracking.currentSessionStart).getTime();
+    if (
+      task.status === "in_progress" &&
+      task.timeTracking.currentSessionStart
+    ) {
+      const startTime = new Date(
+        task.timeTracking.currentSessionStart
+      ).getTime();
       const initialElapsed = Math.floor((Date.now() - startTime) / 1000);
-      const calculatedSessionStart = Date.now() - (initialElapsed * 1000) - task.pausedForInSeconds;
+      const calculatedSessionStart =
+        Date.now() - initialElapsed * 1000 - task.pausedForInSeconds;
       setSessionStart(calculatedSessionStart);
 
       interval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - calculatedSessionStart) / 1000);
+        const elapsed = Math.floor(
+          (Date.now() - calculatedSessionStart) / 1000
+        );
         const newTime = baseTotalSeconds + elapsed;
         setCurrentTime(newTime);
       }, 1000);
@@ -73,7 +94,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [task.startTime, task.pauseTime, task.stopTime, task.pausedForInSeconds, task._id]);
+  }, [
+    task.startTime,
+    task.pauseTime,
+    task.stopTime,
+    task.pausedForInSeconds,
+    task._id,
+  ]);
 
   const formatTime = (seconds: number) => {
     return formatSecondsToTime(seconds);
@@ -81,11 +108,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
 
   const getStatusLabel = () => {
     switch (task.status) {
-      case 'pending': return 'Pending';
-      case 'in_progress': return 'Active';
-      case 'paused': return 'Paused';
-      case 'completed': return 'Done';
-      default: return 'Pending';
+      case "pending":
+        return "Pending";
+      case "in_progress":
+        return "Active";
+      case "paused":
+        return "Paused";
+      case "completed":
+        return "Done";
+      default:
+        return "Pending";
     }
   };
 
@@ -93,7 +125,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
     try {
       await dispatch(startTask(task._id)).unwrap();
     } catch (error) {
-      Alert.alert('Error', 'Failed to start task');
+      Alert.alert("Error", "Failed to start task");
     }
   };
 
@@ -102,7 +134,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
       dispatch(updateTaskTimer({ taskId: task._id, seconds: currentTime }));
       await dispatch(pauseTask(task._id)).unwrap();
     } catch (error) {
-      Alert.alert('Error', 'Failed to pause task');
+      Alert.alert("Error", "Failed to pause task");
     }
   };
 
@@ -110,12 +142,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
     try {
       await dispatch(resumeTask(task._id)).unwrap();
     } catch (error) {
-      Alert.alert('Error', 'Failed to resume task');
+      Alert.alert("Error", "Failed to resume task");
     }
   };
 
   const handleComplete = () => {
-    setConfirmAction('complete');
+    setConfirmAction("complete");
     setShowConfirmModal(true);
   };
 
@@ -125,12 +157,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
       dispatch(updateTaskTimer({ taskId: task._id, seconds: currentTime }));
       await dispatch(completeTask(task._id)).unwrap();
     } catch (error) {
-      Alert.alert('Error', 'Failed to complete task');
+      Alert.alert("Error", "Failed to complete task");
     }
   };
 
   const handleDelete = () => {
-    setConfirmAction('delete');
+    setConfirmAction("delete");
     setShowConfirmModal(true);
   };
 
@@ -139,12 +171,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
     try {
       await dispatch(deleteTask(task._id)).unwrap();
     } catch (error) {
-      Alert.alert('Error', 'Failed to delete task');
+      Alert.alert("Error", "Failed to delete task");
     }
   };
 
   const renderActionButtons = () => {
-    if (task.status === 'completed') {
+    if (task.status === "completed") {
       return (
         <View style={styles.actionsRow}>
           <View style={styles.completedBadge}>
@@ -158,14 +190,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
       );
     }
 
-    if (task.status === 'in_progress') {
+    if (task.status === "in_progress") {
       return (
         <View style={styles.actionsRow}>
           <TouchableOpacity onPress={handlePause} style={styles.pauseButton}>
             <Ionicons name="pause" size={16} color="#FFFFFF" />
             <Text style={styles.pauseButtonText}>Pause</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleComplete} style={styles.completeButton}>
+          <TouchableOpacity
+            onPress={handleComplete}
+            style={styles.completeButton}
+          >
             <Ionicons name="checkmark" size={16} color="#FFFFFF" />
             <Text style={styles.completeButtonText}>Complete</Text>
           </TouchableOpacity>
@@ -173,12 +208,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
       );
     }
 
-    if (task.status === 'paused') {
+    if (task.status === "paused") {
       return (
         <View style={styles.actionsRow}>
           <TouchableOpacity onPress={handleResume} style={styles.startButton}>
             <LinearGradient
-              colors={['#EF4444', '#F97316']}
+              colors={["#EF4444", "#F97316"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.startButtonGradient}
@@ -200,7 +235,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
       <View style={styles.actionsRow}>
         <TouchableOpacity onPress={handleStart} style={styles.startButton}>
           <LinearGradient
-            colors={['#EF4444', '#F97316']}
+            colors={["#EF4444", "#F97316"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.startButtonGradient}
@@ -219,17 +254,27 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
 
   return (
     <LinearGradient
-      colors={['#4ADE80', '#A3E635']}
+      colors={["#4ADE80", "#A3E635"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.card}
     >
       {/* Header */}
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.priorityDot} />
-        <Text style={styles.title} numberOfLines={2}>
-          {task.history[task.history.length - 1]?.title}
-        </Text>
+
+        <View style={styles.headerTextContainer}>
+          <Text style={styles.title} numberOfLines={2}>
+            {task.history[task.history.length - 1]?.title}
+          </Text>
+
+          {task.assignedBy && (
+            <Text style={styles.assignedByText} numberOfLines={1}>
+              Assigned by {task.assignedBy.name}
+            </Text>
+          )}
+        </View>
       </View>
 
       {/* Description */}
@@ -242,12 +287,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
       {/* Timer and Status */}
       <View style={styles.timerContainer}>
         <View style={styles.timerBox}>
-          <Text style={styles.timerText}>
-            {formatTime(currentTime)}
-          </Text>
+          <Text style={styles.timerText}>{formatTime(currentTime)}</Text>
         </View>
         <LinearGradient
-          colors={['#EF4444', '#F97316']}
+          colors={["#EF4444", "#F97316"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.statusBadge}
@@ -262,18 +305,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isActive }) => {
       {/* Confirmation Modal */}
       <ConfirmModal
         visible={showConfirmModal}
-        title={confirmAction === 'complete' ? 'Complete Task' : 'Delete Task'}
+        title={confirmAction === "complete" ? "Complete Task" : "Delete Task"}
         description={
-          confirmAction === 'complete'
-            ? 'Are you sure you want to mark this task as completed?'
-            : 'Are you sure you want to delete this task?'
+          confirmAction === "complete"
+            ? "Are you sure you want to mark this task as completed?"
+            : "Are you sure you want to delete this task?"
         }
         onCancel={() => {
           setShowConfirmModal(false);
           setConfirmAction(null);
         }}
-        onOkClick={confirmAction === 'complete' ? confirmComplete : confirmDelete}
-        okClickLabel={confirmAction === 'complete' ? 'submit' : 'ok'}
+        onOkClick={
+          confirmAction === "complete" ? confirmComplete : confirmDelete
+        }
+        okClickLabel={confirmAction === "complete" ? "submit" : "ok"}
       />
     </LinearGradient>
   );
@@ -286,48 +331,48 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   priorityDot: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#FBBF24',
+    backgroundColor: "#FBBF24",
     marginRight: 8,
   },
   title: {
     flex: 1,
     fontSize: 16,
-    fontFamily: 'Sora_600SemiBold',
-    color: '#000000',
+    fontFamily: "Sora_600SemiBold",
+    color: "#000000",
   },
   description: {
     fontSize: 13,
-    fontFamily: 'Sora_400Regular',
-    color: '#374151',
+    fontFamily: "Sora_400Regular",
+    color: "#374151",
     marginBottom: 12,
   },
   timerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
     gap: 8,
   },
   timerBox: {
     flex: 1,
-    backgroundColor: '#1F1F1F',
+    backgroundColor: "#1F1F1F",
     borderRadius: 8,
     padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   timerText: {
     fontSize: 18,
-    fontFamily: 'Sora_600SemiBold',
-    color: '#FFFFFF',
-    fontVariant: ['tabular-nums'],
+    fontFamily: "Sora_600SemiBold",
+    color: "#FFFFFF",
+    fontVariant: ["tabular-nums"],
   },
   statusBadge: {
     borderRadius: 8,
@@ -336,87 +381,97 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    fontFamily: 'Sora_600SemiBold',
-    color: '#FFFFFF',
+    fontFamily: "Sora_600SemiBold",
+    color: "#FFFFFF",
   },
   actionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 8,
   },
   startButton: {
     flex: 1,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   startButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 10,
     gap: 6,
   },
   startButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontFamily: 'Sora_600SemiBold',
+    fontFamily: "Sora_600SemiBold",
   },
   removeButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#4ADE80',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#4ADE80",
     borderRadius: 8,
     paddingVertical: 10,
     gap: 6,
   },
   removeButtonText: {
-    color: '#000000',
+    color: "#000000",
     fontSize: 14,
-    fontFamily: 'Sora_600SemiBold',
+    fontFamily: "Sora_600SemiBold",
   },
   pauseButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1F1F1F',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1F1F1F",
     borderRadius: 8,
     paddingVertical: 10,
     gap: 6,
   },
   pauseButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontFamily: 'Sora_600SemiBold',
+    fontFamily: "Sora_600SemiBold",
   },
   completeButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1F1F1F',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1F1F1F",
     borderRadius: 8,
     paddingVertical: 10,
     gap: 6,
   },
   completeButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontFamily: 'Sora_600SemiBold',
+    fontFamily: "Sora_600SemiBold",
   },
   completedBadge: {
     flex: 1,
-    backgroundColor: '#1F1F1F',
+    backgroundColor: "#1F1F1F",
     borderRadius: 8,
     paddingVertical: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginRight: 8,
   },
   completedText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontFamily: 'Sora_600SemiBold',
+    fontFamily: "Sora_600SemiBold",
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+
+  assignedByText: {
+    fontSize: 12,
+    fontFamily: "Sora_400Regular",
+    color: "#374151",
+    marginTop: 2,
   },
 });

@@ -45,6 +45,10 @@ export interface Task {
   startTime: string;
   stopTime: string;
   pausedForInSeconds: number;
+  assignedBy: {
+    _id: string;
+    name: string;
+  };
 }
 
 export const tasksAPI = {
