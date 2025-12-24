@@ -4,6 +4,7 @@ const Task = require("../models/Task");
 const Employee = require("../models/Employee");
 const moment = require("moment-timezone");
 const { auth, requirePermission } = require("../middleware/auth");
+const { getIO } = require("../socket");
 
 // Employee authentication middleware
 const employeeAuth = async (req, res, next) => {
@@ -118,9 +119,15 @@ router.post(
           tags: taskData.tags || [],
           ...taskData,
           date: moment().startOf("day").toDate(),
+          assignedBy: req.user._id,
+          assignedByModel:
+            req.user.role === "super_admin" ? "Organization" : "Employee",
         });
 
         await newTask.save();
+
+        // Update on realtime
+        getIO().to(employeeId.toString()).emit("task:assigned", newTask);
         createdTaskIds.push(newTask._id);
       }
 
@@ -256,6 +263,7 @@ router.get("/today", employeeAuth, async (req, res) => {
       employee: employee._id,
       date: { $gte: today, $lte: endOfDay },
       status: { $ne: "cancelled" },
+      isArchived: { $ne: true },
     }).sort({ priority: -1, createdAt: 1 });
 
     // Calculate statistics

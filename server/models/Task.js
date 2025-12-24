@@ -1,16 +1,15 @@
-const mongoose = require('mongoose');
-
+const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema({
   employee: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Employee',
-    required: true
+    ref: "Employee",
+    required: true,
   },
   organization: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Organization',
-    required: true
+    ref: "Organization",
+    required: true,
   },
   // title: {
   //   type: String,
@@ -25,63 +24,79 @@ const taskSchema = new mongoose.Schema({
     {
       title: { type: String, required: true },
       description: { type: String, required: false, default: "" },
-      createdAt: { type: Date, default: Date.now }
-    }
+      createdAt: { type: Date, default: Date.now },
+    },
   ],
   priority: {
     type: String,
-    enum: ['low', 'medium', 'high', 'urgent'],
-    default: 'medium'
+    enum: ["low", "medium", "high", "urgent"],
+    default: "medium",
   },
   status: {
     type: String,
-    enum: ['pending', 'in_progress', 'paused', 'completed', 'cancelled'],
-    default: 'pending'
+    enum: ["pending", "in_progress", "paused", "completed", "cancelled"],
+    default: "pending",
   },
   date: {
     type: Date,
     required: true,
-    default: Date.now
+    default: Date.now,
   },
   dueDate: {
-    type: Date
+    type: Date,
+  },
+  isAssigned: {
+    type: Boolean,
+    default: false,
+  },
+  assignedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    refPath: "assignedByModel",
+  },
+  assignedByModel: {
+    type: String,
+    enum: ["Employee", "Organization"],
   },
   timeTracking: {
     totalSeconds: {
       type: Number,
-      default: 0
+      default: 0,
     },
-    sessions: [{
-      startTime: Date,
-      endTime: Date,
-      duration: Number, // seconds
-      type: {
-        type: String,
-        enum: ['work', 'pause']
-      }
-    }],
+    sessions: [
+      {
+        startTime: Date,
+        endTime: Date,
+        duration: Number, // seconds
+        type: {
+          type: String,
+          enum: ["work", "pause"],
+        },
+      },
+    ],
     currentSessionStart: Date,
-    lastPauseTime: Date
+    lastPauseTime: Date,
   },
   isCarriedForward: {
     type: Boolean,
-    default: false
+    default: false,
   },
   carriedFromDate: {
-    type: Date
+    type: Date,
   },
-  tags: [{
-    type: String,
-    trim: true
-  }],
+  tags: [
+    {
+      type: String,
+      trim: true,
+    },
+  ],
   completedAt: Date,
   createdAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
   startTime: Date,
   stopTime: Date,
@@ -97,7 +112,7 @@ const taskSchema = new mongoose.Schema({
   },
   pausedForInSeconds: {
     type: Number,
-    default: 0
+    default: 0,
   },
   totalPausedTime: {
     type: Number, // Store total paused time in milliseconds
@@ -110,7 +125,7 @@ const taskSchema = new mongoose.Schema({
 });
 
 // Pre-save middleware to update timestamp
-taskSchema.pre('save', function (next) {
+taskSchema.pre("save", function (next) {
   this.updatedAt = new Date();
   next();
 });
@@ -136,15 +151,14 @@ taskSchema.index({ organization: 1, date: -1 });
 taskSchema.index({ status: 1, priority: 1 });
 taskSchema.index({ employee: 1, status: 1, date: -1 });
 
-
 // Middleware to calculate total paused time and update isPaused flag
-taskSchema.pre('save', function (next) {
-  if (this.isModified('pauseTime') && this.pauseTime) {
+taskSchema.pre("save", function (next) {
+  if (this.isModified("pauseTime") && this.pauseTime) {
     // If there's a pauseTime, set isPaused to true
     this.isPaused = true;
   }
 
-  if (this.isModified('playTime') && this.playTime && this.pauseTime) {
+  if (this.isModified("playTime") && this.playTime && this.pauseTime) {
     // Calculate the paused duration since the last pause
     const pausedDuration = this.playTime - this.pauseTime;
     // Add it to the total paused time
@@ -164,7 +178,9 @@ taskSchema.methods.getFormattedPausedTime = function () {
   const totalMinutes = Math.floor(this.totalPausedTime / 60000);
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}`;
 };
 
-module.exports = mongoose.model('Task', taskSchema);
+module.exports = mongoose.model("Task", taskSchema);

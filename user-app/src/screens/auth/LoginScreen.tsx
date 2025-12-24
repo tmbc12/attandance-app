@@ -43,7 +43,7 @@ export default function LoginScreen() {
       setShowErrorModal(true);
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>

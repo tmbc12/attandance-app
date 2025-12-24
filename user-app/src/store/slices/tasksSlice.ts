@@ -168,6 +168,15 @@ const tasksSlice = createSlice({
         task.timeTracking.totalSeconds = action.payload.seconds;
       }
     },
+    addTask: (state, action: PayloadAction<Task>) => {
+      state.tasks.unshift(action.payload);
+
+      // Update stats
+      if (state.stats) {
+        state.stats.total += 1;
+        state.stats.pending += 1;
+      }
+    }
   },
   extraReducers: (builder) => {
     // Create task
@@ -318,5 +327,5 @@ const tasksSlice = createSlice({
   },
 });
 
-export const { clearError, setActiveTask, setTimerRunning, updateTaskTimer } = tasksSlice.actions;
+export const { clearError, setActiveTask, setTimerRunning, updateTaskTimer, addTask } = tasksSlice.actions;
 export default tasksSlice.reducer;
