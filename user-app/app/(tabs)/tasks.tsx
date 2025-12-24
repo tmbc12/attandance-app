@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -78,7 +79,17 @@ export default function TasksScreen() {
   const insets = useSafeAreaInsets();
   const [tasks, setTasks] = useState(mockTasks);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
+  const [addTaskModalVisible, setAddTaskModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
+  const [showUserPicker, setShowUserPicker] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    assignedTo: '',
+    assignedBy: 'Current User', // You can replace this with actual user
+    dueDate: '',
+    priority: 'medium',
+  });
   const tabBarHeight = 60 + insets.bottom;
 
   const handleAccept = (taskId: string) => {
@@ -106,6 +117,49 @@ export default function TasksScreen() {
       setAssignModalVisible(false);
       setSelectedTask(null);
     }
+  };
+
+  const handleAddTask = () => {
+    if (formData.title.trim() && formData.description.trim() && formData.assignedTo && formData.dueDate) {
+      const newTask = {
+        id: String(tasks.length + 1),
+        title: formData.title,
+        description: formData.description,
+        assignedBy: formData.assignedBy,
+        assignedTo: formData.assignedTo,
+        status: 'pending' as const,
+        dueDate: formData.dueDate,
+        priority: formData.priority as 'high' | 'medium' | 'low',
+      };
+      setTasks((prevTasks) => [newTask, ...prevTasks]);
+      setFormData({
+        title: '',
+        description: '',
+        assignedTo: '',
+        assignedBy: 'Current User',
+        dueDate: '',
+        priority: 'medium',
+      });
+      setAddTaskModalVisible(false);
+      setShowUserPicker(false);
+    }
+  };
+
+  const handleSelectUserForNewTask = (userId: string, userName: string) => {
+    setFormData((prev) => ({ ...prev, assignedTo: userName }));
+    setShowUserPicker(false);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      assignedTo: '',
+      assignedBy: 'Current User',
+      dueDate: '',
+      priority: 'medium',
+    });
+    setShowUserPicker(false);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -207,7 +261,16 @@ export default function TasksScreen() {
         style={styles.header}
       >
         <SafeAreaView style={styles.headerSafeArea} edges={['top']}>
-          <Text style={styles.title}>Task List</Text>
+          <View style={styles.headerContent}>
+            <Text style={styles.title}>Task List</Text>
+            <TouchableOpacity
+              onPress={() => setAddTaskModalVisible(true)}
+              style={styles.addButton}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
       </LinearGradient>
 
@@ -273,6 +336,195 @@ export default function TasksScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Add Task Modal */}
+      <Modal
+        visible={addTaskModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          setAddTaskModalVisible(false);
+          resetForm();
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Add New Task</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setAddTaskModalVisible(false);
+                  resetForm();
+                }}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.formContent} showsVerticalScrollIndicator={false}>
+              {/* Title Input */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Task Title</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter task title"
+                  placeholderTextColor="#6B7280"
+                  value={formData.title}
+                  onChangeText={(text) => setFormData((prev) => ({ ...prev, title: text }))}
+                />
+              </View>
+
+              {/* Description Input */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Description</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  placeholder="Enter task description"
+                  placeholderTextColor="#6B7280"
+                  value={formData.description}
+                  onChangeText={(text) => setFormData((prev) => ({ ...prev, description: text }))}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                />
+              </View>
+
+              {/* Assign To Input */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Assign To</Text>
+                <TouchableOpacity
+                  style={styles.userPickerButton}
+                  onPress={() => setShowUserPicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.userPickerText,
+                      !formData.assignedTo && styles.userPickerPlaceholder,
+                    ]}
+                  >
+                    {formData.assignedTo || 'Select a user'}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Due Date Input */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Due Date</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor="#6B7280"
+                  value={formData.dueDate}
+                  onChangeText={(text) => setFormData((prev) => ({ ...prev, dueDate: text }))}
+                />
+              </View>
+
+              {/* Priority Selection */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Priority</Text>
+                <View style={styles.priorityButtons}>
+                  {(['high', 'medium', 'low'] as const).map((priority) => (
+                    <TouchableOpacity
+                      key={priority}
+                      style={[
+                        styles.priorityButton,
+                        formData.priority === priority && {
+                          backgroundColor: getPriorityColor(priority) + '30',
+                          borderColor: getPriorityColor(priority),
+                        },
+                      ]}
+                      onPress={() => setFormData((prev) => ({ ...prev, priority }))}
+                      activeOpacity={0.7}
+                    >
+                      <View
+                        style={[
+                          styles.priorityDot,
+                          { backgroundColor: getPriorityColor(priority) },
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.priorityButtonText,
+                          { color: getPriorityColor(priority) },
+                        ]}
+                      >
+                        {priority.toUpperCase()}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Submit Button */}
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleAddTask}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['#4ADE80', '#22C55E']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.submitButtonGradient}
+                >
+                  <Ionicons name="checkmark-circle" size={20} color="#000000" />
+                  <Text style={styles.submitButtonText}>Create Task</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* User Picker Modal for Add Task */}
+      <Modal
+        visible={showUserPicker}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowUserPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select User</Text>
+              <TouchableOpacity
+                onPress={() => setShowUserPicker(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalSubtitle}>Select a user to assign this task to:</Text>
+
+            <ScrollView style={styles.userList} showsVerticalScrollIndicator={false}>
+              {mockUsers.map((user) => (
+                <TouchableOpacity
+                  key={user.id}
+                  style={styles.userItem}
+                  onPress={() => handleSelectUserForNewTask(user.id, user.name)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.userAvatar}>
+                    <Text style={styles.userAvatarText}>
+                      {user.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .toUpperCase()}
+                    </Text>
+                  </View>
+                  <Text style={styles.userName}>{user.name}</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -291,13 +543,24 @@ const styles = StyleSheet.create({
   headerSafeArea: {
     paddingVertical: 16,
     paddingHorizontal: 20,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     fontSize: 20,
     fontFamily: 'Sora_700Bold',
     color: '#FFFFFF',
+  },
+  addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   listContent: {
     padding: 16,
@@ -491,6 +754,89 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Sora_500Medium',
     color: '#FFFFFF',
+  },
+  formContent: {
+    padding: 20,
+    maxHeight: 500,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontFamily: 'Sora_600SemiBold',
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#2C2C2C',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    fontFamily: 'Sora_400Regular',
+    color: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
+  },
+  textArea: {
+    minHeight: 100,
+    paddingTop: 12,
+  },
+  userPickerButton: {
+    backgroundColor: '#2C2C2C',
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
+  },
+  userPickerText: {
+    fontSize: 14,
+    fontFamily: 'Sora_400Regular',
+    color: '#FFFFFF',
+  },
+  userPickerPlaceholder: {
+    color: '#6B7280',
+  },
+  priorityButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  priorityButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
+    backgroundColor: '#2C2C2C',
+    gap: 6,
+  },
+  priorityButtonText: {
+    fontSize: 12,
+    fontFamily: 'Sora_600SemiBold',
+  },
+  submitButton: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginTop: 8,
+    marginBottom: 32,
+  },
+  submitButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: 8,
+  },
+  submitButtonText: {
+    fontSize: 16,
+    fontFamily: 'Sora_600SemiBold',
+    color: '#000000',
   },
 });
 
