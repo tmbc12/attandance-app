@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
+  Linking,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -121,22 +123,60 @@ export default function AutoCheckInScreen() {
 
   const handleRequestPermissions = async () => {
     setIsLoading(true);
-    const granted = await locationService.requestPermissions();
-    setLocationPermission(granted);
-    setIsLoading(false);
-
-    if (!granted) {
-      setModalTitle('Permissions Required');
-      setModalMessage('Location permissions are needed for automatic check-in. Please enable them in your device settings.');
-      setModalAction(null);
-      setShowModal(true);
+    try {
+      // First check current permission status
+      const statusCheck = await locationService.getPermissionStatus();
+      
+      // If permission is already denied, open settings directly
+      if (statusCheck === 'denied') {
+        setIsLoading(false);
+        setModalTitle('Permission Required');
+        setModalMessage('Location permission is required for auto check-in. Please enable it in your device settings.');
+        setModalAction(() => async () => {
+          setShowModal(false);
+          // Open device settings
+          if (Platform.OS === 'ios') {
+            await Linking.openURL('app-settings:');
+          } else {
+            await Linking.openSettings();
+          }
+        });
+        setShowModal(true);
+        return;
+      }
+      
+      // If permission is undetermined, request it (will show system dialog)
+      console.log('Starting permission request...');
+      const result = await locationService.requestPermissions();
+      console.log('Permission request result:', result);
+      setLocationPermission(result.granted);
+      
+      // If still denied after request, open settings
+      if (!result.granted && result.needsSettings) {
+        setModalTitle('Permission Required');
+        setModalMessage('Location permission is required for auto check-in. Please enable it in your device settings.');
+        setModalAction(() => async () => {
+          setShowModal(false);
+          // Open device settings
+          if (Platform.OS === 'ios') {
+            await Linking.openURL('app-settings:');
+          } else {
+            await Linking.openSettings();
+          }
+        });
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error('Error requesting permissions:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleToggleAutoCheckIn = async (value: boolean) => {
     if (value && !locationPermission) {
-      setModalTitle('Permissions Required');
-      setModalMessage('Please grant location permissions first.');
+      setModalTitle('Location Access Required');
+      setModalMessage('We request location access only to verify your presence at the office for automatic check-in and check-out. \nYour location is not tracked continuously and is used only at work start times.');
       setModalAction(null);
       setShowModal(true);
       return;
@@ -309,7 +349,10 @@ export default function AutoCheckInScreen() {
           <Text style={styles.sectionTitle}>Location Permissions</Text>
           <View style={styles.infoCard}>
             <Text style={styles.sectionDescription}>
-              Required for automatic check-in based on your location
+            We collect your location only to verify office presence for auto check-in and check-out.
+            </Text>
+            <Text style={styles.sectionDescription}>
+            Location is not tracked continuously and is accessed only during work start times.
             </Text>
             {locationPermission ? (
               <View style={styles.permissionGranted}>
@@ -515,19 +558,34 @@ export default function AutoCheckInScreen() {
                     </TouchableOpacity>
                   </>
                 ) : (
-                  <TouchableOpacity
-                    style={styles.modalSingleButton}
-                    onPress={() => setShowModal(false)}
-                  >
-                    <LinearGradient
-                      colors={['#3B82F6', '#2563EB']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.modalSingleButtonGradient}
+                  <>
+                    <TouchableOpacity
+                      style={styles.modalCancelButton}
+                      onPress={() => setShowModal(false)}
                     >
-                      <Text style={styles.modalSingleButtonText}>OK</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
+                      <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={styles.modalConfirmButton}
+                      onPress={() => {
+                        setShowModal(false);
+                        // Request permission after modal closes
+                        setTimeout(() => {
+                          handleRequestPermissions();
+                        }, 300);
+                      }}
+                    >
+                      <LinearGradient
+                        colors={['#3B82F6', '#2563EB']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.modalConfirmButtonGradient}
+                      >
+                        <Text style={styles.modalConfirmButtonText}>OK</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </>
                 )}
               </View>
             </View>

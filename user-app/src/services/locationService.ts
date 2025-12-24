@@ -165,40 +165,44 @@ TaskManager.defineTask(GEOFENCE_TASK_NAME, async ({ data, error }: any) => {
 });
 
 export const locationService = {
-  // Request location permissions
-  async requestPermissions(): Promise<boolean> {
+  // Request location permissions (foreground only)
+  async requestPermissions(): Promise<{ granted: boolean; needsSettings: boolean }> {
     try {
-      const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
+      console.log('Requesting foreground location permission...');
+      // Always try to request permission (even if previously denied, user might have changed settings)
+      const foregroundResult = await Location.requestForegroundPermissionsAsync();
+      const foregroundStatus = foregroundResult.status;
+      console.log('Permission request result:', foregroundStatus);
       
-      if (foregroundStatus !== 'granted') {
-        console.log('Foreground location permission denied');
-        return false;
-      }
-
-      const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
-      
-      if (backgroundStatus !== 'granted') {
-        console.log('Background location permission denied');
-        return false;
-      }
-
-      return true;
+      return { 
+        granted: foregroundStatus === 'granted', 
+        needsSettings: foregroundStatus === 'denied' 
+      };
     } catch (error) {
       console.error('Error requesting location permissions:', error);
+      return { granted: false, needsSettings: false };
+    }
+  },
+
+  // Check if location permissions are granted (foreground only)
+  async hasPermissions(): Promise<boolean> {
+    try {
+      const { status: foregroundStatus } = await Location.getForegroundPermissionsAsync();
+      return foregroundStatus === 'granted';
+    } catch (error) {
+      console.error('Error checking location permissions:', error);
       return false;
     }
   },
 
-  // Check if location permissions are granted
-  async hasPermissions(): Promise<boolean> {
+  // Get permission status
+  async getPermissionStatus(): Promise<string> {
     try {
-      const { status: foregroundStatus } = await Location.getForegroundPermissionsAsync();
-      const { status: backgroundStatus } = await Location.getBackgroundPermissionsAsync();
-      
-      return foregroundStatus === 'granted' && backgroundStatus === 'granted';
+      const { status } = await Location.getForegroundPermissionsAsync();
+      return status;
     } catch (error) {
-      console.error('Error checking location permissions:', error);
-      return false;
+      console.error('Error getting permission status:', error);
+      return 'undetermined';
     }
   },
 
