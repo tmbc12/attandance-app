@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '../../api/auth';
 
-interface User {
+export interface User {
   _id: string;
   name: string;
   email: string;

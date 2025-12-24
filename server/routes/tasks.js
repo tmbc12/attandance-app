@@ -119,6 +119,7 @@ router.post(
           tags: taskData.tags || [],
           ...taskData,
           date: moment().startOf("day").toDate(),
+          isAssigned: true,
           assignedBy: req.user._id,
           assignedByModel:
             req.user.role === "super_admin" ? "Organization" : "Employee",
@@ -291,7 +292,7 @@ router.get("/today", employeeAuth, async (req, res) => {
 // Get my tasks with filters
 router.get("/", employeeAuth, async (req, res) => {
   try {
-    const { status, startDate, endDate, limit = 50, skip = 0 } = req.query;
+    const { status, startDate, endDate, limit = 50, skip = 0, isAssigned } = req.query;
     const employee = req.employee;
 
     const query = { employee: employee._id };
@@ -310,7 +311,12 @@ router.get("/", employeeAuth, async (req, res) => {
       }
     }
 
+    if (isAssigned !== undefined) {
+      query.isAssigned = isAssigned === "true";
+    }
+
     const tasks = await Task.find(query)
+    .populate("assignedBy", "name")
       .sort({ date: -1, priority: -1, createdAt: 1 })
       .limit(parseInt(limit))
       .skip(parseInt(skip));

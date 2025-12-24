@@ -12,6 +12,7 @@ interface TaskStats {
 
 interface TasksState {
   tasks: Task[];
+  assignedTasks: Task[];
   stats: TaskStats | null;
   isLoading: boolean;
   error: string | null;
@@ -21,6 +22,7 @@ interface TasksState {
 
 const initialState: TasksState = {
   tasks: [],
+  assignedTasks: [],
   stats: null,
   isLoading: false,
   error: null,
@@ -52,6 +54,17 @@ export const getTodayTasks = createAsyncThunk(
     }
   }
 );
+
+export const getTasks = createAsyncThunk( 
+  'tasks/getTasks',
+  async ({ status, startDate, endDate, limit = 50, skip = 0, isAssigned }: { status?: string; startDate?: string; endDate?: string; limit?: number; skip?: number, isAssigned?: boolean }, { rejectWithValue }) => {
+    try {
+      const response = await tasksAPI.getTasks({ status, startDate, endDate, limit, skip, isAssigned });
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch tasks');
+    }
+  })
 
 export const startTask = createAsyncThunk(
   'tasks/start',
@@ -213,6 +226,20 @@ const tasksSlice = createSlice({
       state.timerRunning = !!activeTask;
     });
     builder.addCase(getTodayTasks.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    });
+
+    // Get tasks with filters
+    builder.addCase(getTasks.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(getTasks.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.assignedTasks = action.payload.tasks || [];
+    });
+    builder.addCase(getTasks.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload as string;
     });

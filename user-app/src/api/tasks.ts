@@ -21,7 +21,7 @@ export interface Task {
   // description?: string;
   history: TaskHistory[];
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'in_progress' | 'paused' | 'completed' | 'cancelled';
+  status: 'pending' | 'accepted' | 'in_progress' | 'paused' | 'completed' | 'cancelled';
   date: string;
   dueDate?: string;
   timeTracking: {
@@ -65,7 +65,7 @@ export const tasksAPI = {
   },
 
   // Get tasks with filters
-  getTasks: async (params?: { status?: string; startDate?: string; endDate?: string; limit?: number; skip?: number }) => {
+  getTasks: async (params?: { status?: string; startDate?: string; endDate?: string; limit?: number; skip?: number, isAssigned?: boolean }) => {
     const response = await apiClient.get('/api/tasks', { params });
     return response.data;
   },
