@@ -12,6 +12,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 // Mock data for tasks
 const mockTasks = [
@@ -73,6 +74,11 @@ const mockUsers = [
   { id: '3', name: 'Carol White', email: 'carol.white@example.com' },
   { id: '4', name: 'Daniel Lee', email: 'daniel.lee@example.com' },
   { id: '5', name: 'Emma Davis', email: 'emma.davis@example.com' },
+  { id: '6', name: 'Alice Smith', email: 'alice.smith@example.com' },
+  { id: '7', name: 'Bob Miller', email: 'bob.miller@example.com' },
+  { id: '8', name: 'Carol White', email: 'carol.white@example.com' },
+  { id: '9', name: 'Daniel Lee', email: 'daniel.lee@example.com' },
+  { id: '10', name: 'Emma Davis', email: 'emma.davis@example.com' },
 ];
 
 export default function TasksScreen() {
@@ -81,7 +87,10 @@ export default function TasksScreen() {
   const [assignModalVisible, setAssignModalVisible] = useState(false);
   const [addTaskModalVisible, setAddTaskModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
-  const [showUserPicker, setShowUserPicker] = useState(false);
+  const [userPickerOpen, setUserPickerOpen] = useState(false);
+  const [userPickerValue, setUserPickerValue] = useState<string | null>(null);
+  const [assignUserPickerOpen, setAssignUserPickerOpen] = useState(false);
+  const [assignUserPickerValue, setAssignUserPickerValue] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -91,6 +100,12 @@ export default function TasksScreen() {
     priority: 'medium',
   });
   const tabBarHeight = 60 + insets.bottom;
+
+  // Convert mockUsers to dropdown items
+  const userPickerItems = mockUsers.map((user) => ({
+    label: user.name,
+    value: user.name,
+  }));
 
   const handleAccept = (taskId: string) => {
     setTasks((prevTasks) =>
@@ -105,17 +120,19 @@ export default function TasksScreen() {
     setAssignModalVisible(true);
   };
 
-  const handleAssignToUser = (userId: string, userName: string) => {
-    if (selectedTask) {
+  const handleAssignToUser = () => {
+    if (selectedTask && assignUserPickerValue) {
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task.id === selectedTask
-            ? { ...task, assignedTo: userName, status: 'assigned' as const }
+            ? { ...task, assignedTo: assignUserPickerValue, status: 'assigned' as const }
             : task
         )
       );
       setAssignModalVisible(false);
       setSelectedTask(null);
+      setAssignUserPickerValue(null);
+      setAssignUserPickerOpen(false);
     }
   };
 
@@ -140,14 +157,10 @@ export default function TasksScreen() {
         dueDate: '',
         priority: 'medium',
       });
+      setUserPickerValue(null);
+      setUserPickerOpen(false);
       setAddTaskModalVisible(false);
-      setShowUserPicker(false);
     }
-  };
-
-  const handleSelectUserForNewTask = (userId: string, userName: string) => {
-    setFormData((prev) => ({ ...prev, assignedTo: userName }));
-    setShowUserPicker(false);
   };
 
   const resetForm = () => {
@@ -159,7 +172,8 @@ export default function TasksScreen() {
       dueDate: '',
       priority: 'medium',
     });
-    setShowUserPicker(false);
+    setUserPickerValue(null);
+    setUserPickerOpen(false);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -295,44 +309,104 @@ export default function TasksScreen() {
         visible={assignModalVisible}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setAssignModalVisible(false)}
+        onRequestClose={() => {
+          setAssignModalVisible(false);
+          setAssignUserPickerValue(null);
+          setAssignUserPickerOpen(false);
+        }}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Assign Task</Text>
               <TouchableOpacity
-                onPress={() => setAssignModalVisible(false)}
+                onPress={() => {
+                  setAssignModalVisible(false);
+                  setAssignUserPickerValue(null);
+                  setAssignUserPickerOpen(false);
+                }}
                 style={styles.closeButton}
               >
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalSubtitle}>Select a user to assign this task to:</Text>
+            <View style={styles.assignModalContent}>
+              <Text style={styles.modalSubtitle}>Select a user to assign this task to:</Text>
+              
+              <View style={styles.inputContainer}>
+                <DropDownPicker
+                  open={assignUserPickerOpen}
+                  value={assignUserPickerValue}
+                  items={userPickerItems}
+                  setOpen={setAssignUserPickerOpen}
+                  setValue={setAssignUserPickerValue}
+                  placeholder="Select a user"
+                  style={styles.dropdownPicker}
+                  textStyle={styles.dropdownText}
+                  placeholderStyle={styles.dropdownPlaceholder}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  selectedItemLabelStyle={styles.dropdownSelectedText}
+                  listItemLabelStyle={styles.dropdownListItemText}
+                  ArrowDownIconComponent={({ style }) => (
+                    <View style={style}>
+                      <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
+                    </View>
+                  )}
+                  ArrowUpIconComponent={({ style }) => (
+                    <View style={style}>
+                      <Ionicons name="chevron-up" size={20} color="#9CA3AF" />
+                    </View>
+                  )}
+                  TickIconComponent={({ style }) => (
+                    <View style={style}>
+                      <Ionicons name="checkmark" size={20} color="#4ADE80" />
+                    </View>
+                  )}
+                  showArrowIcon={true}
+                  disableLocalSearch={true}
+                  closeAfterSelecting={true}
+                  maxHeight={200}
+                  scrollViewProps={{
+                    nestedScrollEnabled: true,
+                    showsVerticalScrollIndicator: true,
+                    bounces: false,
+                  }}
+                  listMode="SCROLLVIEW"
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                />
+              </View>
 
-            <ScrollView style={styles.userList} showsVerticalScrollIndicator={false}>
-              {mockUsers.map((user) => (
-                <TouchableOpacity
-                  key={user.id}
-                  style={styles.userItem}
-                  onPress={() => handleAssignToUser(user.id, user.name)}
-                  activeOpacity={0.7}
+              {/* Assign Button */}
+              <TouchableOpacity
+                style={styles.assignConfirmButton}
+                onPress={handleAssignToUser}
+                activeOpacity={0.8}
+                disabled={!assignUserPickerValue}
+              >
+                <LinearGradient
+                  colors={assignUserPickerValue ? ['#4ADE80', '#22C55E'] : ['#2C2C2C', '#2C2C2C']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.assignButtonGradient}
                 >
-                  <View style={styles.userAvatar}>
-                    <Text style={styles.userAvatarText}>
-                      {user.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .toUpperCase()}
-                    </Text>
-                  </View>
-                  <Text style={styles.userName}>{user.name}</Text>
-                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+                  <Ionicons 
+                    name="checkmark-circle" 
+                    size={20} 
+                    color={assignUserPickerValue ? "#000000" : "#6B7280"} 
+                  />
+                  <Text 
+                    style={[
+                      styles.assignConfirmButtonText,
+                      !assignUserPickerValue && styles.assignConfirmButtonTextDisabled
+                    ]}
+                  >
+                    Assign
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -393,21 +467,50 @@ export default function TasksScreen() {
               {/* Assign To Input */}
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Assign To</Text>
-                <TouchableOpacity
-                  style={styles.userPickerButton}
-                  onPress={() => setShowUserPicker(true)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.userPickerText,
-                      !formData.assignedTo && styles.userPickerPlaceholder,
-                    ]}
-                  >
-                    {formData.assignedTo || 'Select a user'}
-                  </Text>
-                  <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
-                </TouchableOpacity>
+                <DropDownPicker
+                  open={userPickerOpen}
+                  value={userPickerValue}
+                  items={userPickerItems}
+                  setOpen={setUserPickerOpen}
+                  setValue={setUserPickerValue}
+                  onChangeValue={(value) => {
+                    setFormData((prev) => ({ ...prev, assignedTo: value || '' }));
+                  }}
+                  placeholder="Select a user"
+                  style={styles.dropdownPicker}
+                  textStyle={styles.dropdownText}
+                  placeholderStyle={styles.dropdownPlaceholder}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                  selectedItemLabelStyle={styles.dropdownSelectedText}
+                  listItemLabelStyle={styles.dropdownListItemText}
+                  ArrowDownIconComponent={({ style }) => (
+                    <View style={style}>
+                      <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
+                    </View>
+                  )}
+                  ArrowUpIconComponent={({ style }) => (
+                    <View style={style}>
+                      <Ionicons name="chevron-up" size={20} color="#9CA3AF" />
+                    </View>
+                  )}
+                  TickIconComponent={({ style }) => (
+                    <View style={style}>
+                      <Ionicons name="checkmark" size={20} color="#4ADE80" />
+                    </View>
+                  )}
+                  showArrowIcon={true}
+                  disableLocalSearch={true}
+                  closeAfterSelecting={true}
+                  maxHeight={200}
+                  scrollViewProps={{
+                    nestedScrollEnabled: true,
+                    showsVerticalScrollIndicator: true,
+                    bounces: false,
+                  }}
+                  listMode="SCROLLVIEW"
+                  zIndex={3000}
+                  zIndexInverse={1000}
+                />
               </View>
 
               {/* Due Date Input */}
@@ -479,52 +582,6 @@ export default function TasksScreen() {
         </View>
       </Modal>
 
-      {/* User Picker Modal for Add Task */}
-      <Modal
-        visible={showUserPicker}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowUserPicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select User</Text>
-              <TouchableOpacity
-                onPress={() => setShowUserPicker(false)}
-                style={styles.closeButton}
-              >
-                <Ionicons name="close" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.modalSubtitle}>Select a user to assign this task to:</Text>
-
-            <ScrollView style={styles.userList} showsVerticalScrollIndicator={false}>
-              {mockUsers.map((user) => (
-                <TouchableOpacity
-                  key={user.id}
-                  style={styles.userItem}
-                  onPress={() => handleSelectUserForNewTask(user.id, user.name)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.userAvatar}>
-                    <Text style={styles.userAvatarText}>
-                      {user.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .toUpperCase()}
-                    </Text>
-                  </View>
-                  <Text style={styles.userName}>{user.name}</Text>
-                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -724,6 +781,9 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 12,
   },
+  assignModalContent: {
+    padding: 20,
+  },
   userList: {
     maxHeight: 400,
   },
@@ -782,23 +842,40 @@ const styles = StyleSheet.create({
     minHeight: 100,
     paddingTop: 12,
   },
-  userPickerButton: {
+  dropdownPicker: {
     backgroundColor: '#2C2C2C',
     borderRadius: 8,
-    padding: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#3A3A3A',
+    minHeight: 48,
   },
-  userPickerText: {
+  dropdownText: {
     fontSize: 14,
     fontFamily: 'Sora_400Regular',
     color: '#FFFFFF',
   },
-  userPickerPlaceholder: {
+  dropdownPlaceholder: {
+    fontSize: 14,
+    fontFamily: 'Sora_400Regular',
     color: '#6B7280',
+  },
+  dropdownContainer: {
+    backgroundColor: '#2C2C2C',
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
+    borderRadius: 8,
+    marginTop: 4,
+    maxHeight: 200,
+  },
+  dropdownSelectedText: {
+    fontSize: 14,
+    fontFamily: 'Sora_400Regular',
+    color: '#FFFFFF',
+  },
+  dropdownListItemText: {
+    fontSize: 14,
+    fontFamily: 'Sora_400Regular',
+    color: '#FFFFFF',
   },
   priorityButtons: {
     flexDirection: 'row',
@@ -837,6 +914,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Sora_600SemiBold',
     color: '#000000',
+  },
+  assignConfirmButton: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginTop: 20,
+  },
+  assignButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    gap: 8,
+  },
+  assignConfirmButtonText: {
+    fontSize: 16,
+    fontFamily: 'Sora_600SemiBold',
+    color: '#000000',
+  },
+  assignConfirmButtonTextDisabled: {
+    color: '#6B7280',
   },
 });
 
