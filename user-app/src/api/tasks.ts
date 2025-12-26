@@ -58,6 +58,12 @@ export const tasksAPI = {
     return response.data;
   },
 
+  // Assng Task
+  assignTask: async (taskId: string, assignedTo: string) => {
+    const response = await apiClient.post(`/api/tasks/${taskId}/assign`, { assignedTo });
+    return response.data;
+  },
+
   // Get today's tasks
   getTodayTasks: async () => {
     const response = await apiClient.get('/api/tasks/today');

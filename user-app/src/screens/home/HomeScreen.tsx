@@ -41,7 +41,8 @@ import { useNotification } from "@/context/NotificationContext";
 import { ExpoTokenAPI } from "@/src/api/expo-token";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { socket } from "@/src/utils/socket";
-import { addTask } from "@/src/store/slices/tasksSlice";
+import { addSplittedTask, addTask } from "@/src/store/slices/tasksSlice";
+import { Task } from "@/src/api/tasks";
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch();
@@ -87,10 +88,19 @@ export default function HomeScreen() {
         socket.connect();
       }
 
-      socket.on("task:assigned", (task) => {
+      const onTaskAssigned = (task: Task) => {
         if (!isMounted) return;
-        dispatch(addTask(task));
-      });
+        dispatch(addTask({ task, userRole: user?.role as string }));
+      };
+
+      const onTaskSplitted = (splittedTask: Task) => {
+        if (!isMounted) return;
+        console.log("Received splitted task:", splittedTask);
+        dispatch(addSplittedTask(splittedTask));
+      };
+
+      socket.on("task:assigned", onTaskAssigned);
+      socket.on("task:splitted", onTaskSplitted);
     };
 
     connectSocket();
@@ -98,6 +108,7 @@ export default function HomeScreen() {
     return () => {
       isMounted = false;
       socket.off("task:assigned");
+      socket.off("task:splitted");
       socket.disconnect();
     };
   }, [user?._id]);

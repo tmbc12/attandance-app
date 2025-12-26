@@ -265,7 +265,9 @@ router.get("/today", employeeAuth, async (req, res) => {
       date: { $gte: today, $lte: endOfDay },
       status: { $ne: "cancelled" },
       isArchived: { $ne: true },
-    }).populate("assignedBy", "name").sort({ priority: -1, createdAt: 1 });
+    })
+      .populate("assignedBy", "name")
+      .sort({ priority: -1, createdAt: 1 });
 
     // Calculate statistics
     const stats = {
@@ -292,7 +294,14 @@ router.get("/today", employeeAuth, async (req, res) => {
 // Get my tasks with filters
 router.get("/", employeeAuth, async (req, res) => {
   try {
-    const { status, startDate, endDate, limit = 50, skip = 0, isAssigned } = req.query;
+    const {
+      status,
+      startDate,
+      endDate,
+      limit = 50,
+      skip = 0,
+      isAssigned,
+    } = req.query;
     const employee = req.employee;
 
     const query = { employee: employee._id };
@@ -316,7 +325,7 @@ router.get("/", employeeAuth, async (req, res) => {
     }
 
     const tasks = await Task.find(query)
-    .populate("assignedBy", "name")
+      .populate("assignedBy", "name")
       .sort({ date: -1, priority: -1, createdAt: 1 })
       .limit(parseInt(limit))
       .skip(parseInt(skip));
@@ -333,6 +342,61 @@ router.get("/", employeeAuth, async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching tasks", error: error.message });
+  }
+});
+
+// Assign task to others
+router.post("/:taskId/assign", employeeAuth, async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const employee = req.employee;
+    const { assignedTo } = req.body;
+
+    const task = await Task.findOne({
+      _id: taskId,
+      employee: employee._id,
+    });
+
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    if (task.status === "completed") {
+      return res
+        .status(400)
+        .json({ message: "Cannot assign a completed task" });
+    }
+
+    if (task.status === "in_progress") {
+      return res.status(400).json({ message: "Task is already in progress" });
+    }
+
+    task.status = "pending";
+    task.assignedTo = assignedTo;
+    task.assignedBy = employee._id;
+    task.isAssigned = true;
+    await task.save();
+
+    const updatedTask = {
+      ...task._doc,
+      assignedBy: {
+        _id: employee._id,
+        name: employee.name,
+      },
+    };
+
+    // Send on realtime
+    getIO().to(assignedTo.toString()).emit("task:splitted", updatedTask);
+
+    res.json({
+      task: updatedTask,
+      message: "Task assigned successfully",
+    });
+  } catch (error) {
+    console.error("Assign task error:", error);
+    res
+      .status(500)
+      .json({ message: "Error assigning task", error: error.message });
   }
 });
 

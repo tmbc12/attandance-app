@@ -17,10 +17,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import DropDownPicker from "react-native-dropdown-picker";
 import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
-import { getTasks } from "@/src/store/slices/tasksSlice";
+import { assignTask, getTasks } from "@/src/store/slices/tasksSlice";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { getTeamToday } from "@/src/store/slices/attendanceSlice";
 import { User } from "@/src/store/slices/authSlice";
+import { showToast } from "@/src/utils/toast";
 
 // Mock data for tasks
 // const mockTasks = [
@@ -96,7 +97,6 @@ export default function TasksScreen() {
   const { assignedTasks } = useAppSelector((state) => state.tasks);
   const { teamAttendances } = useAppSelector((state) => state.attendance);
   const { user } = useAppSelector((state) => state.auth);
-  const [tasks, setTasks] = useState(assignedTasks);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
   const [addTaskModalVisible, setAddTaskModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
@@ -117,13 +117,15 @@ export default function TasksScreen() {
   const tabBarHeight = 60 + insets.bottom;
 
   const canViewMember = (att: any, user: User) => {
-
     if (user.role === "team_lead") {
       return att.employee.department === user.departmentId;
     }
 
     if (user.role === "manager") {
-      return att.employee.department === user.departmentId && att.role === "team_lead";
+      return (
+        att.employee.department === user.departmentId &&
+        att.role === "team_lead"
+      );
     }
 
     return false;
@@ -148,44 +150,46 @@ export default function TasksScreen() {
     }
   };
 
-  const isFocused = useIsFocused();
-
-  useEffect(() => {
-    if (isFocused) {
+  useFocusEffect(
+    useCallback(() => {
       fetchData();
-    }
-  }, [isFocused]);
+    }, [])
+  );
+
+  // useEffect(() => {
+  //   setTasks(assignedTasks);
+  // }, [assignedTasks]);
 
   const handleAccept = (taskId: string) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task._id === taskId ? { ...task, status: "accepted" as const } : task
-      )
-    );
+    // setTasks((prevTasks) =>
+    //   prevTasks.map((task) =>
+    //     task._id === taskId ? { ...task, status: "accepted" as const } : task
+    //   )
+    // );
   };
 
-  const handleAssign = (taskId: string) => {
+  const handleAssignClick = (taskId: string) => {
     setSelectedTask(taskId);
     setAssignModalVisible(true);
   };
 
-  const handleAssignToUser = () => {
-    if (selectedTask && assignUserPickerValue) {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task._id === selectedTask
-            ? {
-                ...task,
-                assignedTo: assignUserPickerValue,
-                // status: "assigned" as const,
-              }
-            : task
-        )
-      );
-      setAssignModalVisible(false);
-      setSelectedTask(null);
-      setAssignUserPickerValue(null);
-      setAssignUserPickerOpen(false);
+  const handleAssignToUser = async () => {
+    try {
+      if (selectedTask && assignUserPickerValue) {
+        await dispatch(
+          assignTask({
+            taskId: selectedTask as string,
+            assignedTo: assignUserPickerValue as string,
+          })
+        ).unwrap();
+        showToast.success("Task Assigned", "The task has been assigned.");
+        setAssignModalVisible(false);
+        setSelectedTask(null);
+        setAssignUserPickerValue(null);
+        setAssignUserPickerOpen(false);
+      }
+    } catch (error) {
+      showToast.error("Failed to Assign", "Failed to assign task.");
     }
   };
 
@@ -324,7 +328,7 @@ export default function TasksScreen() {
 
         <TouchableOpacity
           style={styles.assignButton}
-          onPress={() => handleAssign(item._id)}
+          onPress={() => handleAssignClick(item._id)}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -366,7 +370,7 @@ export default function TasksScreen() {
 
       {/* Task List */}
       <FlatList
-        data={tasks}
+        data={assignedTasks}
         renderItem={renderTaskCard}
         keyExtractor={(item) => item._id}
         contentContainerStyle={[
