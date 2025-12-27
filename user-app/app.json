@@ -16,7 +16,7 @@
 
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tmbc.attendance",
+      "bundleIdentifier": "com.tmbc.teambo.attendance",
       "infoPlist": {
         "UIBackgroundModes": [
           "location",
@@ -31,7 +31,7 @@
 
     "android": {
       "googleServicesFile": "./google-services.json",
-      "package": "com.tmbc.attendance",
+      "package": "com.tmbc.teambo.attendance",
       "adaptiveIcon": {
         "backgroundColor": "#3B82F6",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
