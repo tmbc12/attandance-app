@@ -130,7 +130,7 @@ export default function AutoCheckInScreen() {
       // If permission is already denied, open settings directly
       if (statusCheck === 'denied') {
         setIsLoading(false);
-        setModalTitle('Permission Required');
+        setModalTitle('Permission optional');
         setModalMessage('Location permission is required for auto check-in. Please enable it in your device settings.');
         setModalAction(() => async () => {
           setShowModal(false);
@@ -153,7 +153,7 @@ export default function AutoCheckInScreen() {
       
       // If still denied after request, open settings
       if (!result.granted && result.needsSettings) {
-        setModalTitle('Permission Required');
+        setModalTitle('Permission Optional');
         setModalMessage('Location permission is required for auto check-in. Please enable it in your device settings.');
         setModalAction(() => async () => {
           setShowModal(false);
